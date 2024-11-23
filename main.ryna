@@ -1,0 +1,69 @@
+// Native library
+let RYND_LIB = load_library($MODULE_PATH + "/native/target/release/rynd_native");
+
+// Functions
+let RYND_CREATE = RYND_LIB.demut().get_function("create_array");
+let RYND_FREE = RYND_LIB.demut().get_function("free_array");
+
+let RYND_CAST = RYND_LIB.demut().get_function("cast_array");
+
+let RYND_SUM = RYND_LIB.demut().get_function("sum_arrays");
+let RYND_SUB = RYND_LIB.demut().get_function("sub_arrays");
+
+let RYND_PRINT = RYND_LIB.demut().get_function("print_array");
+
+// Array class
+class NDArray {
+    inner: Pointer;
+}
+
+fn destroy(arr: &NDArray) {
+    RYND_FREE.demut().call(*arr.inner);
+}
+
+implement Destroyable for NDArray;
+
+// Array creation
+fn new(t: Int, l: Int) -> NDArray {
+    return NDArray(RYND_CREATE.demut().call(*t, 1, *l).as<Pointer>());
+}
+
+// Casts
+fn int(arr: &NDArray) -> NDArray {
+    return NDArray(RYND_CAST.demut().call(*arr.inner, 1).as<Pointer>());
+}
+
+fn float(arr: &NDArray) -> NDArray {
+    return NDArray(RYND_CAST.demut().call(*arr.inner, 2).as<Pointer>());
+}
+
+fn bool(arr: &NDArray) -> NDArray {
+    return NDArray(RYND_CAST.demut().call(*arr.inner, 3).as<Pointer>());
+}
+
+// Operators
+op (a: &NDArray) + (b: &NDArray) -> NDArray {
+    return NDArray(RYND_SUM.demut().call(*a.inner, *b.inner).as<Pointer>());
+}
+
+op (a: &NDArray) - (b: &NDArray) -> NDArray {
+    return NDArray(RYND_SUB.demut().call(*a.inner, *b.inner).as<Pointer>());
+}
+
+// Formatting
+fn print(arr: @NDArray) {
+    RYND_PRINT.demut().call(*arr.inner);
+}
+
+fn print(arr: &NDArray) {
+    RYND_PRINT.demut().call(*arr.inner);
+}
+
+fn print(arr: NDArray) {
+    RYND_PRINT.demut().call(*arr.inner);
+}
+
+let arr1 = new(1, 10);
+let arr2 = new(1, 10);
+
+print(arr1.demut() + arr2.demut());

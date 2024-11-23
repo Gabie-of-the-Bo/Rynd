@@ -1,0 +1,16 @@
+[package]
+name = "rynd-native"
+version = "0.1.0"
+edition = "2021"
+
+[profile.release] 
+codegen-units = 1
+lto = "fat"
+panic = "abort"
+
+[lib]
+crate-type = ["cdylib"]
+ 
+[dependencies]
+ryna-ffi = "0.1.0"
+ndarray = "0.16.1"
