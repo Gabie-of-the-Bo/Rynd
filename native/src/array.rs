@@ -1,4 +1,6 @@
-use ndarray::ArrayD;
+use ndarray::{ArrayD, Zip};
+
+use crate::rynd_error;
 
 
 #[derive(Clone)]
@@ -24,6 +26,12 @@ pub enum NDArray {
     Int(ArrayD<i64>),
     Float(ArrayD<f64>),
     Bool(ArrayD<bool>)
+}
+
+macro_rules! arr_zip {
+    ($a: ident, $b: ident, $op: expr) => {
+        Zip::from($a).and($b).map_collect(|$a, $b| $op)
+    };
 }
 
 impl NDArray {
@@ -74,6 +82,62 @@ impl NDArray {
             (NDArray::Bool(a), NDArray::Int(b)) => NDArray::Int(a.mapv(|i| i as i64) - b),
             (NDArray::Bool(a), NDArray::Float(b)) => NDArray::Float(a.mapv(|i| i as i64 as f64) - b),
             (NDArray::Bool(a), NDArray::Bool(b)) => NDArray::Bool(a ^ b),
+        }
+    }
+
+    pub fn mul(&self, other: &NDArray) -> Self {
+        match (self, other) {
+            (NDArray::Int(a), NDArray::Int(b)) => NDArray::Int(a * b),
+            (NDArray::Int(a), NDArray::Float(b)) => NDArray::Float(a.mapv(|i| i as f64) * b),
+            (NDArray::Int(a), NDArray::Bool(b)) => NDArray::Int(a * b.mapv(|i| i as i64)),
+            (NDArray::Float(a), NDArray::Int(b)) => NDArray::Float(a * b.mapv(|i| i as f64)),
+            (NDArray::Float(a), NDArray::Float(b)) => NDArray::Float(a * b),
+            (NDArray::Float(a), NDArray::Bool(b)) => NDArray::Float(a * b.mapv(|i| i as i64 as f64)),
+            (NDArray::Bool(a), NDArray::Int(b)) => NDArray::Int(a.mapv(|i| i as i64) * b),
+            (NDArray::Bool(a), NDArray::Float(b)) => NDArray::Float(a.mapv(|i| i as i64 as f64) * b),
+            (NDArray::Bool(a), NDArray::Bool(b)) => NDArray::Bool(a & b),
+        }
+    }
+
+    pub fn div(&self, other: &NDArray) -> Self {
+        match (self, other) {
+            (NDArray::Int(a), NDArray::Int(b)) => NDArray::Int(a / b),
+            (NDArray::Int(a), NDArray::Float(b)) => NDArray::Float(a.mapv(|i| i as f64) / b),
+            (NDArray::Int(a), NDArray::Bool(b)) => NDArray::Int(a / b.mapv(|i| i as i64)),
+            (NDArray::Float(a), NDArray::Int(b)) => NDArray::Float(a / b.mapv(|i| i as f64)),
+            (NDArray::Float(a), NDArray::Float(b)) => NDArray::Float(a / b),
+            (NDArray::Float(a), NDArray::Bool(b)) => NDArray::Float(a / b.mapv(|i| i as i64 as f64)),
+            (NDArray::Bool(a), NDArray::Int(b)) => NDArray::Int(a.mapv(|i| i as i64) / b),
+            (NDArray::Bool(a), NDArray::Float(b)) => NDArray::Float(a.mapv(|i| i as i64 as f64) / b),
+            (NDArray::Bool(_), NDArray::Bool(_)) => rynd_error!("Unable to divide two boolean arrays"),
+        }
+    }
+
+    pub fn eq(&self, other: &NDArray) -> Self {
+        match (self, other) {
+            (NDArray::Int(a), NDArray::Int(b)) => NDArray::Bool(arr_zip!(a, b, a == b)),
+            (NDArray::Int(a), NDArray::Float(b)) => NDArray::Bool(arr_zip!(a, b, *a as f64 == *b)),
+            (NDArray::Int(a), NDArray::Bool(b)) => NDArray::Bool(arr_zip!(a, b, *a == *b as i64)),
+            (NDArray::Float(a), NDArray::Int(b)) => NDArray::Bool(arr_zip!(a, b, *a == *b as f64)),
+            (NDArray::Float(a), NDArray::Float(b)) => NDArray::Bool(arr_zip!(a, b, a == b)),
+            (NDArray::Float(a), NDArray::Bool(b)) => NDArray::Bool(arr_zip!(a, b, *a == *b as i64 as f64)),
+            (NDArray::Bool(a), NDArray::Int(b)) => NDArray::Bool(arr_zip!(a, b, *a as i64 == *b)),
+            (NDArray::Bool(a), NDArray::Float(b)) => NDArray::Bool(arr_zip!(a, b, *a as i64 as f64 == *b)),
+            (NDArray::Bool(a), NDArray::Bool(b)) => NDArray::Bool(arr_zip!(a, b, a == b)),
+        }
+    }
+
+    pub fn neq(&self, other: &NDArray) -> Self {
+        match (self, other) {
+            (NDArray::Int(a), NDArray::Int(b)) => NDArray::Bool(arr_zip!(a, b, a != b)),
+            (NDArray::Int(a), NDArray::Float(b)) => NDArray::Bool(arr_zip!(a, b, *a as f64 != *b)),
+            (NDArray::Int(a), NDArray::Bool(b)) => NDArray::Bool(arr_zip!(a, b, *a != *b as i64)),
+            (NDArray::Float(a), NDArray::Int(b)) => NDArray::Bool(arr_zip!(a, b, *a != *b as f64)),
+            (NDArray::Float(a), NDArray::Float(b)) => NDArray::Bool(arr_zip!(a, b, a != b)),
+            (NDArray::Float(a), NDArray::Bool(b)) => NDArray::Bool(arr_zip!(a, b, *a != *b as i64 as f64)),
+            (NDArray::Bool(a), NDArray::Int(b)) => NDArray::Bool(arr_zip!(a, b, *a as i64 != *b)),
+            (NDArray::Bool(a), NDArray::Float(b)) => NDArray::Bool(arr_zip!(a, b, *a as i64 as f64 != *b)),
+            (NDArray::Bool(a), NDArray::Bool(b)) => NDArray::Bool(arr_zip!(a, b, a != b)),
         }
     }
 }

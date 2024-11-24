@@ -4,6 +4,7 @@ use array::NDArray;
 use rynaffi::{ryna_ffi_function, FFIArgs, FFIReturn};
 
 mod array;
+mod error;
 
 // Types
 fn ptr_to_ref<'a>(ptr: *const c_void) -> &'a NDArray {
@@ -15,7 +16,11 @@ ryna_ffi_function!(create_array(args, out) {
     let tp = args[0].as_i64() as usize;
     let num_dims = args[1].as_i64() as usize;
     let shape = args[2..2 + num_dims].into_iter().map(|i| i.as_i64() as usize).collect::<Vec<_>>();
-    let array = Box::new(NDArray::new(tp.try_into().unwrap(), shape));
+
+    let array = match tp.try_into() {
+        Ok(t) => Box::new(NDArray::new(t, shape)),
+        Err(_) => rynd_error!("Invalid array type {tp}"),
+    };
 
     unsafe { *out = (Box::leak(array) as *const NDArray as *const c_void).into(); }
 });
@@ -41,6 +46,42 @@ ryna_ffi_function!(sub_arrays(args, out) {
     let b = ptr_to_ref(args[1].as_ptr());
 
     let res = Box::new(a.sub(b));
+
+    unsafe { *out = (Box::leak(res) as *const NDArray as *const c_void).into(); }
+});
+
+ryna_ffi_function!(mul_arrays(args, out) {
+    let a = ptr_to_ref(args[0].as_ptr());
+    let b = ptr_to_ref(args[1].as_ptr());
+
+    let res = Box::new(a.mul(b));
+
+    unsafe { *out = (Box::leak(res) as *const NDArray as *const c_void).into(); }
+});
+
+ryna_ffi_function!(div_arrays(args, out) {
+    let a = ptr_to_ref(args[0].as_ptr());
+    let b = ptr_to_ref(args[1].as_ptr());
+
+    let res = Box::new(a.div(b));
+
+    unsafe { *out = (Box::leak(res) as *const NDArray as *const c_void).into(); }
+});
+
+ryna_ffi_function!(eq_arrays(args, out) {
+    let a = ptr_to_ref(args[0].as_ptr());
+    let b = ptr_to_ref(args[1].as_ptr());
+
+    let res = Box::new(a.eq(b));
+
+    unsafe { *out = (Box::leak(res) as *const NDArray as *const c_void).into(); }
+});
+
+ryna_ffi_function!(neq_arrays(args, out) {
+    let a = ptr_to_ref(args[0].as_ptr());
+    let b = ptr_to_ref(args[1].as_ptr());
+
+    let res = Box::new(a.neq(b));
 
     unsafe { *out = (Box::leak(res) as *const NDArray as *const c_void).into(); }
 });
