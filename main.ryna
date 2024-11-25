@@ -3,6 +3,7 @@ let RYND_LIB = load_library($MODULE_PATH + "/native/target/release/rynd_native")
 
 // Functions
 let RYND_CREATE = RYND_LIB.demut().get_function("create_array");
+let RYND_COPY = RYND_LIB.demut().get_function("copy_array");
 let RYND_FREE = RYND_LIB.demut().get_function("free_array");
 
 let RYND_CAST = RYND_LIB.demut().get_function("cast_array");
@@ -13,6 +14,9 @@ let RYND_MUL = RYND_LIB.demut().get_function("mul_arrays");
 let RYND_DIV = RYND_LIB.demut().get_function("div_arrays");
 let RYND_EQ  = RYND_LIB.demut().get_function("eq_arrays");
 let RYND_NEQ = RYND_LIB.demut().get_function("neq_arrays");
+
+let RYND_IOTA = RYND_LIB.demut().get_function("iota");
+let RYND_LINSPACE = RYND_LIB.demut().get_function("linspace");
 
 let RYND_PRINT = RYND_LIB.demut().get_function("print_array");
 
@@ -27,63 +31,87 @@ fn destroy(arr: &NDArray) {
 
 implement Destroyable for NDArray;
 
+// Array base interface
+interface NDArrayBase {
+    fn ptr(obj: Self) -> Pointer;
+}
+
+fn ptr(arr: NDArray) -> Pointer {
+    return *arr.inner;
+}
+
+fn ptr(arr: &NDArray) -> Pointer {
+    return *arr.inner;
+}
+
+fn ptr(arr: @NDArray) -> Pointer {
+    return *arr.inner;
+}
+
+implement NDArrayBase for NDArray;
+implement NDArrayBase for &NDArray;
+implement NDArrayBase for @NDArray;
+
 // Array creation
-fn new(t: Int, l: Int) -> NDArray {
+fn zeros(t: Int, l: Int) -> NDArray {
     return NDArray(RYND_CREATE.demut().call(*t, 1, *l).as<Pointer>());
 }
 
+fn iota(l: Int) -> NDArray {
+    return NDArray(RYND_IOTA.demut().call(*l).as<Pointer>());
+}
+
+fn linspace(f: Int, t: Int) -> NDArray {
+    return NDArray(RYND_IOTA.demut().call(*f, *t, 1).as<Pointer>());
+}
+
+fn linspace(f: Int, t: Int, s: Int) -> NDArray {
+    return NDArray(RYND_LINSPACE.demut().call(*f, *t, *s).as<Pointer>());
+}
+
+fn<T> copy(arr: 'T [NDArrayBase]) -> NDArray {
+    return NDArray(RYND_LINSPACE.demut().call(arr.ptr()).as<Pointer>());
+}
+
 // Casts
-fn int(arr: &NDArray) -> NDArray {
-    return NDArray(RYND_CAST.demut().call(*arr.inner, 1).as<Pointer>());
+fn<T> int(arr: 'T [NDArrayBase]) -> NDArray {
+    return NDArray(RYND_CAST.demut().call(arr.ptr(), 1).as<Pointer>());
 }
 
-fn float(arr: &NDArray) -> NDArray {
-    return NDArray(RYND_CAST.demut().call(*arr.inner, 2).as<Pointer>());
+fn<T> float(arr: 'T [NDArrayBase]) -> NDArray {
+    return NDArray(RYND_CAST.demut().call(arr.ptr(), 2).as<Pointer>());
 }
 
-fn bool(arr: &NDArray) -> NDArray {
-    return NDArray(RYND_CAST.demut().call(*arr.inner, 3).as<Pointer>());
+fn<T> bool(arr: 'T [NDArrayBase]) -> NDArray {
+    return NDArray(RYND_CAST.demut().call(arr.ptr(), 3).as<Pointer>());
 }
 
 // Operators
-op (a: &NDArray) + (b: &NDArray) -> NDArray {
-    return NDArray(RYND_SUM.demut().call(*a.inner, *b.inner).as<Pointer>());
+op<L, R> (a: 'L [NDArrayBase]) + (b: 'R [NDArrayBase]) -> NDArray {
+    return NDArray(RYND_SUM.demut().call(a.ptr(), b.ptr()).as<Pointer>());
 }
 
-op (a: &NDArray) - (b: &NDArray) -> NDArray {
-    return NDArray(RYND_SUB.demut().call(*a.inner, *b.inner).as<Pointer>());
+op<L, R> (a: 'L [NDArrayBase]) - (b: 'R [NDArrayBase]) -> NDArray {
+    return NDArray(RYND_SUB.demut().call(a.ptr(), b.ptr()).as<Pointer>());
 }
 
-op (a: &NDArray) * (b: &NDArray) -> NDArray {
-    return NDArray(RYND_MUL.demut().call(*a.inner, *b.inner).as<Pointer>());
+op<L, R> (a: 'L [NDArrayBase]) * (b: 'R [NDArrayBase]) -> NDArray {
+    return NDArray(RYND_MUL.demut().call(a.ptr(), b.ptr()).as<Pointer>());
 }
 
-op (a: &NDArray) / (b: &NDArray) -> NDArray {
-    return NDArray(RYND_DIV.demut().call(*a.inner, *b.inner).as<Pointer>());
+op<L, R> (a: 'L [NDArrayBase]) / (b: 'R [NDArrayBase]) -> NDArray {
+    return NDArray(RYND_DIV.demut().call(a.ptr(), b.ptr()).as<Pointer>());
 }
 
-op (a: &NDArray) == (b: &NDArray) -> NDArray {
-    return NDArray(RYND_EQ.demut().call(*a.inner, *b.inner).as<Pointer>());
+op<L, R> (a: 'L [NDArrayBase]) == (b: 'R [NDArrayBase]) -> NDArray {
+    return NDArray(RYND_EQ.demut().call(a.ptr(), b.ptr()).as<Pointer>());
 }
 
-op (a: &NDArray) != (b: &NDArray) -> NDArray {
-    return NDArray(RYND_NEQ.demut().call(*a.inner, *b.inner).as<Pointer>());
+op<L, R> (a: 'L [NDArrayBase]) != (b: 'R [NDArrayBase]) -> NDArray {
+    return NDArray(RYND_NEQ.demut().call(a.ptr(), b.ptr()).as<Pointer>());
 }
 
 // Formatting
-fn print(arr: @NDArray) {
-    RYND_PRINT.demut().call(*arr.inner);
+fn<T> print(arr: 'T [NDArrayBase]) {
+    RYND_PRINT.demut().call(arr.ptr());
 }
-
-fn print(arr: &NDArray) {
-    RYND_PRINT.demut().call(*arr.inner);
-}
-
-fn print(arr: NDArray) {
-    RYND_PRINT.demut().call(*arr.inner);
-}
-
-let arr1 = new(1, 10);
-let arr2 = new(1, 10);
-
-print(arr1.demut() != arr2.demut());

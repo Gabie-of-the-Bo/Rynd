@@ -28,6 +28,24 @@ pub enum NDArray {
     Bool(ArrayD<bool>)
 }
 
+impl From<ArrayD<i64>> for NDArray {
+    fn from(value: ArrayD<i64>) -> Self {
+        Self::Int(value)
+    }
+}
+
+impl From<ArrayD<f64>> for NDArray {
+    fn from(value: ArrayD<f64>) -> Self {
+        Self::Float(value)
+    }
+}
+
+impl From<ArrayD<bool>> for NDArray {
+    fn from(value: ArrayD<bool>) -> Self {
+        Self::Bool(value)
+    }
+}
+
 macro_rules! arr_zip {
     ($a: ident, $b: ident, $op: expr) => {
         Zip::from($a).and($b).map_collect(|$a, $b| $op)
