@@ -77,6 +77,15 @@ ryna_ffi_function!(div_arrays(args, out) {
     unsafe { *out = (Box::leak(res) as *const NDArray as *const c_void).into(); }
 });
 
+ryna_ffi_function!(pow_arrays(args, out) {
+    let a = ptr_to_ref(args[0].as_ptr());
+    let b = ptr_to_ref(args[1].as_ptr());
+
+    let res = Box::new(a.pow(b));
+
+    unsafe { *out = (Box::leak(res) as *const NDArray as *const c_void).into(); }
+});
+
 ryna_ffi_function!(eq_arrays(args, out) {
     let a = ptr_to_ref(args[0].as_ptr());
     let b = ptr_to_ref(args[1].as_ptr());

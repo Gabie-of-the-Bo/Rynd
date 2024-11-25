@@ -12,6 +12,7 @@ let RYND_SUM = RYND_LIB.demut().get_function("sum_arrays");
 let RYND_SUB = RYND_LIB.demut().get_function("sub_arrays");
 let RYND_MUL = RYND_LIB.demut().get_function("mul_arrays");
 let RYND_DIV = RYND_LIB.demut().get_function("div_arrays");
+let RYND_POW = RYND_LIB.demut().get_function("pow_arrays");
 let RYND_EQ  = RYND_LIB.demut().get_function("eq_arrays");
 let RYND_NEQ = RYND_LIB.demut().get_function("neq_arrays");
 
@@ -67,6 +68,10 @@ fn linspace(f: Int, t: Int) -> NDArray {
 
 fn linspace(f: Int, t: Int, s: Int) -> NDArray {
     return NDArray(RYND_LINSPACE.demut().call(*f, *t, *s).as<Pointer>());
+}
+
+fn<L, R> pow(a: 'L [NDArrayBase], b: 'R [NDArrayBase]) -> NDArray {
+    return NDArray(RYND_POW.demut().call(a.ptr(), b.ptr()).as<Pointer>());
 }
 
 fn<T> copy(arr: 'T [NDArrayBase]) -> NDArray {

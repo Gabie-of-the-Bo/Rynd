@@ -131,6 +131,20 @@ impl NDArray {
         }
     }
 
+    pub fn pow(&self, other: &NDArray) -> Self {
+        match (self, other) {
+            (NDArray::Int(a), NDArray::Int(b)) => NDArray::Float(arr_zip!(a, b, (*a as f64).powf(*b as f64))),
+            (NDArray::Int(a), NDArray::Float(b)) => NDArray::Float(arr_zip!(a, b, (*a as f64).powf(*b))),
+            (NDArray::Int(a), NDArray::Bool(b)) => NDArray::Float(arr_zip!(a, b, (*a as f64).powf(*b as i64 as f64))),
+            (NDArray::Float(a), NDArray::Int(b)) => NDArray::Float(arr_zip!(a, b, a.powf(*b as f64))),
+            (NDArray::Float(a), NDArray::Float(b)) => NDArray::Float(arr_zip!(a, b, a.powf(*b))),
+            (NDArray::Float(a), NDArray::Bool(b)) => NDArray::Float(arr_zip!(a, b, a.powf(*b as i64 as f64))),
+            (NDArray::Bool(a), NDArray::Int(b)) => NDArray::Float(arr_zip!(a, b, (*a as i64 as f64).powf(*b as f64))),
+            (NDArray::Bool(a), NDArray::Float(b)) => NDArray::Float(arr_zip!(a, b, (*a as i64 as f64).powf(*b as f64))),
+            (NDArray::Bool(a), NDArray::Bool(b)) => NDArray::Bool(a & b),
+        }
+    }
+
     pub fn eq(&self, other: &NDArray) -> Self {
         match (self, other) {
             (NDArray::Int(a), NDArray::Int(b)) => NDArray::Bool(arr_zip!(a, b, a == b)),
