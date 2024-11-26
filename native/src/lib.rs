@@ -1,13 +1,15 @@
 use std::{io::Write, os::raw::c_void};
 
 use array::NDArray;
-use ndarray::Array1;
+use owned::NDArrayOwned;
 use rynaffi::{ryna_ffi_function, FFIArgs, FFIReturn};
 
+mod owned;
+mod view;
 mod array;
 mod error;
 
-// Types
+// Pointer ops
 fn ptr_to_ref<'a>(ptr: *const c_void) -> &'a NDArray {
     unsafe { &*(ptr as *const NDArray) }
 }
@@ -41,74 +43,32 @@ ryna_ffi_function!(free_array(args, _out) {
 });
 
 // Operators
-ryna_ffi_function!(sum_arrays(args, out) {
-    let a = ptr_to_ref(args[0].as_ptr());
-    let b = ptr_to_ref(args[1].as_ptr());
+macro_rules! binop_rynd_ffi {
+    ($function: ident, $name: ident) => {
+        ryna_ffi_function!($function(args, out) {
+            let a = ptr_to_ref(args[0].as_ptr());
+            let b = ptr_to_ref(args[1].as_ptr());
+        
+            let res = Box::new(a.$name(&b));
+        
+            unsafe { *out = (Box::leak(res) as *const NDArray as *const c_void).into(); }
+        });                
+    };
+}
 
-    let res = Box::new(a.sum(b));
-
-    unsafe { *out = (Box::leak(res) as *const NDArray as *const c_void).into(); }
-});
-
-ryna_ffi_function!(sub_arrays(args, out) {
-    let a = ptr_to_ref(args[0].as_ptr());
-    let b = ptr_to_ref(args[1].as_ptr());
-
-    let res = Box::new(a.sub(b));
-
-    unsafe { *out = (Box::leak(res) as *const NDArray as *const c_void).into(); }
-});
-
-ryna_ffi_function!(mul_arrays(args, out) {
-    let a = ptr_to_ref(args[0].as_ptr());
-    let b = ptr_to_ref(args[1].as_ptr());
-
-    let res = Box::new(a.mul(b));
-
-    unsafe { *out = (Box::leak(res) as *const NDArray as *const c_void).into(); }
-});
-
-ryna_ffi_function!(div_arrays(args, out) {
-    let a = ptr_to_ref(args[0].as_ptr());
-    let b = ptr_to_ref(args[1].as_ptr());
-
-    let res = Box::new(a.div(b));
-
-    unsafe { *out = (Box::leak(res) as *const NDArray as *const c_void).into(); }
-});
-
-ryna_ffi_function!(pow_arrays(args, out) {
-    let a = ptr_to_ref(args[0].as_ptr());
-    let b = ptr_to_ref(args[1].as_ptr());
-
-    let res = Box::new(a.pow(b));
-
-    unsafe { *out = (Box::leak(res) as *const NDArray as *const c_void).into(); }
-});
-
-ryna_ffi_function!(eq_arrays(args, out) {
-    let a = ptr_to_ref(args[0].as_ptr());
-    let b = ptr_to_ref(args[1].as_ptr());
-
-    let res = Box::new(a.eq(b));
-
-    unsafe { *out = (Box::leak(res) as *const NDArray as *const c_void).into(); }
-});
-
-ryna_ffi_function!(neq_arrays(args, out) {
-    let a = ptr_to_ref(args[0].as_ptr());
-    let b = ptr_to_ref(args[1].as_ptr());
-
-    let res = Box::new(a.neq(b));
-
-    unsafe { *out = (Box::leak(res) as *const NDArray as *const c_void).into(); }
-});
+binop_rynd_ffi!(sum_arrays, sum);
+binop_rynd_ffi!(sub_arrays, sub);
+binop_rynd_ffi!(mul_arrays, mul);
+binop_rynd_ffi!(div_arrays, div);
+binop_rynd_ffi!(pow_arrays, pow);
+binop_rynd_ffi!(eq_arrays, eq);
+binop_rynd_ffi!(neq_arrays, neq);
 
 // Common array operations
 ryna_ffi_function!(iota(args, out) {
     let l = args[0].as_i64();
 
-    let array = Box::new(NDArray::from(Array1::<i64>::from_iter(0..l).into_dyn()));
+    let array = Box::new(NDArrayOwned::iota(l).into());
 
     unsafe { *out = (Box::leak(array) as *const NDArray as *const c_void).into(); }
 });
@@ -118,7 +78,7 @@ ryna_ffi_function!(linspace(args, out) {
     let t = args[1].as_i64();
     let s = args[2].as_i64() as usize;
 
-    let array = Box::new(NDArray::from(Array1::<i64>::from_iter((f..t).step_by(s)).into_dyn()));
+    let array = Box::new(NDArrayOwned::linspace(f, t, s).into());
 
     unsafe { *out = (Box::leak(array) as *const NDArray as *const c_void).into(); }
 });
