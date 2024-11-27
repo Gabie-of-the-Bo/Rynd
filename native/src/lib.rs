@@ -1,6 +1,7 @@
-use std::{io::Write, os::raw::c_void};
+use std::io::Write;
 
 use array::NDArray;
+use memory::{register_and_leak, free_array_ptr, ptr_to_ref};
 use owned::NDArrayOwned;
 use rynaffi::{ryna_ffi_function, FFIArgs, FFIReturn};
 
@@ -8,11 +9,7 @@ mod owned;
 mod view;
 mod array;
 mod error;
-
-// Pointer ops
-fn ptr_to_ref<'a>(ptr: *const c_void) -> &'a NDArray {
-    unsafe { &*(ptr as *const NDArray) }
-}
+mod memory;
 
 // Memory management
 ryna_ffi_function!(create_array(args, out) {
@@ -25,7 +22,7 @@ ryna_ffi_function!(create_array(args, out) {
         Err(_) => rynd_error!("Invalid array type {tp}"),
     };
 
-    unsafe { *out = (Box::leak(array) as *const NDArray as *const c_void).into(); }
+    unsafe { *out = register_and_leak(array).into(); }
 });
 
 ryna_ffi_function!(copy_array(args, out) {
@@ -33,13 +30,13 @@ ryna_ffi_function!(copy_array(args, out) {
 
     let res = Box::new(a.clone());
 
-    unsafe { *out = (Box::leak(res) as *const NDArray as *const c_void).into(); }
+    unsafe { *out = register_and_leak(res).into(); }
 });
 
 ryna_ffi_function!(free_array(args, _out) {
-    let ptr = args[0].as_ptr() as *mut NDArray;
+    let ptr = args[0].as_ptr();
     
-    unsafe { std::ptr::drop_in_place(ptr); }
+    free_array_ptr(ptr);
 });
 
 // Operators
@@ -51,7 +48,7 @@ macro_rules! binop_rynd_ffi {
         
             let res = Box::new(a.$name(&b));
         
-            unsafe { *out = (Box::leak(res) as *const NDArray as *const c_void).into(); }
+            unsafe { *out = register_and_leak(res).into(); }
         });                
     };
 }
@@ -70,7 +67,7 @@ ryna_ffi_function!(iota(args, out) {
 
     let array = Box::new(NDArrayOwned::iota(l).into());
 
-    unsafe { *out = (Box::leak(array) as *const NDArray as *const c_void).into(); }
+    unsafe { *out = register_and_leak(array).into(); }
 });
 
 ryna_ffi_function!(linspace(args, out) {
@@ -80,7 +77,7 @@ ryna_ffi_function!(linspace(args, out) {
 
     let array = Box::new(NDArrayOwned::linspace(f, t, s).into());
 
-    unsafe { *out = (Box::leak(array) as *const NDArray as *const c_void).into(); }
+    unsafe { *out = register_and_leak(array).into(); }
 });
 
 // Utility
@@ -90,7 +87,7 @@ ryna_ffi_function!(cast_array(args, out) {
 
     let array = Box::new(arr.cast(tp.try_into().unwrap()));
 
-    unsafe { *out = (Box::leak(array) as *const NDArray as *const c_void).into(); }
+    unsafe { *out = register_and_leak(array).into(); }
 });
 
 ryna_ffi_function!(print_array(args, _out) {

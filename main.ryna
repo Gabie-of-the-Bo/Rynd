@@ -63,7 +63,7 @@ fn iota(l: Int) -> NDArray {
 }
 
 fn linspace(f: Int, t: Int) -> NDArray {
-    return NDArray(RYND_IOTA.demut().call(*f, *t, 1).as<Pointer>());
+    return NDArray(RYND_LINSPACE.demut().call(*f, *t, 1).as<Pointer>());
 }
 
 fn linspace(f: Int, t: Int, s: Int) -> NDArray {
@@ -75,7 +75,7 @@ fn<L, R> pow(a: 'L [NDArrayBase], b: 'R [NDArrayBase]) -> NDArray {
 }
 
 fn<T> copy(arr: 'T [NDArrayBase]) -> NDArray {
-    return NDArray(RYND_LINSPACE.demut().call(arr.ptr()).as<Pointer>());
+    return NDArray(RYND_COPY.demut().call(arr.ptr()).as<Pointer>());
 }
 
 // Casts
