@@ -60,6 +60,7 @@ binop_rynd_ffi!(div_arrays, div);
 binop_rynd_ffi!(pow_arrays, pow);
 binop_rynd_ffi!(eq_arrays, eq);
 binop_rynd_ffi!(neq_arrays, neq);
+binop_rynd_ffi!(index_arrays, index);
 
 // Common array operations
 ryna_ffi_function!(iota(args, out) {

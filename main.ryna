@@ -15,6 +15,7 @@ let RYND_DIV = RYND_LIB.demut().get_function("div_arrays");
 let RYND_POW = RYND_LIB.demut().get_function("pow_arrays");
 let RYND_EQ  = RYND_LIB.demut().get_function("eq_arrays");
 let RYND_NEQ = RYND_LIB.demut().get_function("neq_arrays");
+let RYND_IDX = RYND_LIB.demut().get_function("index_arrays");
 
 let RYND_IOTA = RYND_LIB.demut().get_function("iota");
 let RYND_LINSPACE = RYND_LIB.demut().get_function("linspace");
@@ -114,6 +115,10 @@ op<L, R> (a: 'L [NDArrayBase]) == (b: 'R [NDArrayBase]) -> NDArray {
 
 op<L, R> (a: 'L [NDArrayBase]) != (b: 'R [NDArrayBase]) -> NDArray {
     return NDArray(RYND_NEQ.demut().call(a.ptr(), b.ptr()).as<Pointer>());
+}
+
+op<L, R> (a: 'L [NDArrayBase])[b: 'R [NDArrayBase]] -> NDArray {
+    return NDArray(RYND_IDX.demut().call(a.ptr(), b.ptr()).as<Pointer>());
 }
 
 // Formatting

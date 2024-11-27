@@ -1,4 +1,4 @@
-use ndarray::{Dim, IxDynImpl, RawArrayView, Zip};
+use ndarray::{Array1, ArrayBase, ArrayViewD, Axis, Dim, IxDynImpl, OwnedRepr, RawArrayView, Zip};
 
 use crate::{owned::NDArrayOwned, rynd_error};
 
@@ -122,6 +122,90 @@ impl NDArrayView {
             (NDArrayView::Bool(a), NDArrayView::Int(b)) => NDArrayOwned::from(arr_zip!(a, b, (*a as i64 as f64).powf(*b as f64))),
             (NDArrayView::Bool(a), NDArrayView::Float(b)) => NDArrayOwned::from(arr_zip!(a, b, (*a as i64 as f64).powf(*b as f64))),
             (NDArrayView::Bool(a), NDArrayView::Bool(b)) => NDArrayOwned::from(view!(a) & view!(b)),
+        }
+    }
+
+    fn mask<T>(v: &DynRawArrayView<T>, mask: &DynRawArrayView<bool>) -> NDArrayOwned 
+        where NDArrayOwned: From<ArrayBase<OwnedRepr<T>, Dim<IxDynImpl>>>,
+              T: Clone { 
+        if v.shape() != mask.shape() {
+            rynd_error!("Array with shape {:?} cannot mask array with shape {:?}", mask.shape(), v.shape())
+        }
+
+        Array1::<T>::from_iter(
+            view!(v).iter()
+                    .zip(view!(mask))
+                    .filter_map(|(v, m)| {
+                        if *m {
+                            Some(v.clone())
+                        } else {
+                            None
+                        }
+                    })
+        ).into_dyn().into()
+    }
+
+    fn index_view_i64(dim: usize, mut index: i64) -> usize {
+        while index < 0 {
+            index += dim as i64;
+        }
+
+        if index as u64 > usize::MAX as u64 {
+            rynd_error!("Invalid array index: {}", index);
+        }
+
+        index as usize
+    }
+
+    fn index_view<T: Clone>(v: &ArrayViewD<T>, index: &[i64]) -> T {
+        // Prepare indexes
+        let mapped_idx = index.iter()
+                              .zip(v.shape())
+                              .map(|(i, d)| Self::index_view_i64(*d, *i))
+                              .collect::<Vec<_>>();
+
+        v[mapped_idx.as_slice()].clone()
+    }
+
+    fn array_index<T>(v: &DynRawArrayView<T>, index: &DynRawArrayView<i64>) -> NDArrayOwned 
+        where NDArrayOwned: From<ArrayBase<OwnedRepr<T>, Dim<IxDynImpl>>>,
+              T: Clone { 
+        if !Self::valid_index(v, index) {
+            rynd_error!("Array with shape {:?} cannot index array with shape {:?}", index.shape(), v.shape())
+        }
+        
+        let fv = view!(v);
+
+        if index.shape().len() == 2 {
+            Array1::<T>::from_iter(
+                view!(index).lanes(Axis(index.shape().len() - 1)).into_iter()
+                            .map(|i| Self::index_view(fv, i.as_slice().unwrap()))
+            ).into_dyn().into()
+
+        } else {
+            Array1::<T>::from_iter(
+                view!(index).iter().map(|i| Self::index_view(fv, &[*i]))
+            ).into_dyn().into()
+        }
+    }
+
+    fn valid_index<T>(v: &DynRawArrayView<T>, index: &DynRawArrayView<i64>) -> bool {
+        (
+            v.shape().len() == *index.shape().last().unwrap() ||
+            (v.shape().len() == 1 && index.shape().len() == 1)
+        ) && index.shape().len() <= 2
+    }
+
+    pub fn index(&self, other: &NDArrayView) -> NDArrayOwned {
+        match (self, other) {
+            (NDArrayView::Int(a), NDArrayView::Int(b)) => Self::array_index(a, b),
+            (NDArrayView::Float(a), NDArrayView::Int(b)) => Self::array_index(a, b),
+            (NDArrayView::Bool(a), NDArrayView::Int(b)) => Self::array_index(a, b),
+            (NDArrayView::Int(a), NDArrayView::Bool(b)) => Self::mask(a, b),
+            (NDArrayView::Float(a), NDArrayView::Bool(b)) => Self::mask(a, b),
+            (NDArrayView::Bool(a), NDArrayView::Bool(b)) => Self::mask(a, b),
+
+            (_, NDArrayView::Float(_)) => rynd_error!("Unable to use float as an index"),
         }
     }
 }

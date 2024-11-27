@@ -47,6 +47,13 @@ impl NDArray {
         }
     }
 
+    pub fn index(&self, idx: &NDArray) -> Self {
+        let obj = self.view();
+        let idx_view = idx.view();
+
+        obj.index(&idx_view).into()
+    }
+
     view_binop!(sum);
     view_binop!(sub);
     view_binop!(mul);
