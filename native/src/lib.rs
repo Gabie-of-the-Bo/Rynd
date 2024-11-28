@@ -1,4 +1,4 @@
-use std::io::Write;
+use std::{io::Write, os::raw::c_void};
 
 use array::NDArray;
 use memory::{free_array_ptr, ptr_to_ref, register_and_leak, register_view};
@@ -13,6 +13,36 @@ mod error;
 mod memory;
 
 // Memory management
+ryna_ffi_function!(malloc(args, out) {
+    let size = args[0].as_i64() as usize;
+    let layout = std::alloc::Layout::array::<i64>(size).expect("Invalid layout");
+    let ptr = unsafe { std::alloc::alloc(layout) };
+
+    unsafe { *out = (ptr as *const c_void).into(); }
+});
+
+ryna_ffi_function!(free(args, _out) {
+    let ptr = args[0].as_ptr() as *mut u8;
+    let size = args[1].as_i64() as usize;
+    let layout = std::alloc::Layout::array::<i64>(size).expect("Invalid layout");
+
+    unsafe { std::alloc::dealloc(ptr, layout) };
+});
+
+ryna_ffi_function!(array_from_ptr(args, out) {
+    let ptr = args[0].as_ptr();
+    let tp = args[1].as_i64() as usize;
+    let num_dims = args[2].as_i64() as usize;
+    let shape = args[3..3 + num_dims].into_iter().map(|i| i.as_i64() as usize).collect::<Vec<_>>();
+
+    let array = match tp.try_into() {
+        Ok(t) => Box::new(NDArray::from_ptr(t, shape, ptr)),
+        Err(_) => rynd_error!("Invalid array type {tp}"),
+    };
+
+    unsafe { *out = register_and_leak(array).into(); }
+});
+
 ryna_ffi_function!(create_array(args, out) {
     let tp = args[0].as_i64() as usize;
     let num_dims = args[1].as_i64() as usize;

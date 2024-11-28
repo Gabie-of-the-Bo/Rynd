@@ -1,4 +1,4 @@
-use std::fmt::Display;
+use std::{fmt::Display, os::raw::c_void};
 
 use ndarray::Slice;
 
@@ -33,6 +33,29 @@ macro_rules! view_binop {
 impl NDArray {
     pub fn new(tp: NDArrayType, shape: Vec<usize>) -> Self {
         NDArray::from(NDArrayOwned::new(tp, shape))
+    }
+
+    pub fn from_ptr(tp: NDArrayType, shape: Vec<usize>, ptr: *const c_void) -> Self {
+        let mut arr = NDArrayOwned::new(tp, shape.clone());
+
+        match &mut arr {
+            NDArrayOwned::Int(a) => {
+                let slice = unsafe { std::slice::from_raw_parts(ptr as *const i64, shape.iter().product()) };
+                a.iter_mut().zip(slice).for_each(|(i, v)| { *i = *v; });
+            },
+
+            NDArrayOwned::Float(a) => {
+                let slice = unsafe { std::slice::from_raw_parts(ptr as *const f64, shape.iter().product()) };
+                a.iter_mut().zip(slice).for_each(|(i, v)| { *i = *v; });
+            },
+
+            NDArrayOwned::Bool(a) => {
+                let slice = unsafe { std::slice::from_raw_parts(ptr as *const i64, shape.iter().product()) };
+                a.iter_mut().zip(slice).for_each(|(i, v)| { *i = *v != 0; });
+            }
+        }
+
+        arr.into()
     }
 
     pub fn shape(&self) -> &[usize] {
