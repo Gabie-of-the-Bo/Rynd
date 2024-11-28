@@ -134,7 +134,7 @@ ryna_ffi_function!(slice_array(args, out) {
         .map(|i| i.as_i64() as isize)
         .collect::<Vec<_>>()
         .chunks_exact(3)
-        .map(|s| Slice::new(s[0], Some(s[1]), s[2]))
+        .map(|s| Slice::new(s[0], if s[1] == -1 { None } else { Some(s[1] + 1) }, s[2]))
         .collect::<Vec<_>>();
 
     let res = Box::new(arr.slice(slices));
