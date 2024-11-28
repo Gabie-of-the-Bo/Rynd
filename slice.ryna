@@ -1,0 +1,15 @@
+class Slice {
+    from_idx: Int;
+    to_idx: Int;
+    step: Int;
+}
+
+binary right op ":" (10000);
+
+op (a: Int) : (b: Int) -> Slice {
+    return Slice(*a, *b, 1);
+}
+
+op (a: Slice) : (b: Int) -> Slice {
+    return Slice(*a.from_idx, *a.to_idx, *b);
+}

@@ -2,6 +2,7 @@ use std::io::Write;
 
 use array::NDArray;
 use memory::{free_array_ptr, ptr_to_ref, register_and_leak, register_view};
+use ndarray::Slice;
 use owned::NDArrayOwned;
 use rynaffi::{ryna_ffi_function, FFIArgs, FFIReturn};
 
@@ -88,6 +89,25 @@ ryna_ffi_function!(reshape_array(args, out) {
     let shape = args[2..2 + num_dims].into_iter().map(|i| i.as_i64() as usize).collect::<Vec<_>>();
 
     let res = Box::new(arr.reshape(shape));
+    let view_ptr = register_and_leak(res);
+
+    register_view(arr_ptr, view_ptr);
+
+    unsafe { *out = view_ptr.into(); }
+});
+
+ryna_ffi_function!(slice_array(args, out) {
+    let arr_ptr = args[0].as_ptr();
+    let arr = ptr_to_ref(arr_ptr);
+    let num_dims = args[1].as_i64() as usize;
+    let slices = args[2..2 + num_dims * 3].into_iter()
+        .map(|i| i.as_i64() as isize)
+        .collect::<Vec<_>>()
+        .chunks_exact(3)
+        .map(|s| Slice::new(s[0], Some(s[1]), s[2]))
+        .collect::<Vec<_>>();
+
+    let res = Box::new(arr.slice(slices));
     let view_ptr = register_and_leak(res);
 
     register_view(arr_ptr, view_ptr);

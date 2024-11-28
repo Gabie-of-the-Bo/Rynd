@@ -1,3 +1,5 @@
+import * from /slice;
+
 // Native library
 let RYND_LIB = load_library($MODULE_PATH + "/native/target/release/rynd_native");
 
@@ -20,6 +22,7 @@ let RYND_IDX = RYND_LIB.demut().get_function("index_arrays");
 let RYND_IOTA = RYND_LIB.demut().get_function("iota");
 let RYND_LINSPACE = RYND_LIB.demut().get_function("linspace");
 let RYND_RESHAPE = RYND_LIB.demut().get_function("reshape_array");
+let RYND_SLICE = RYND_LIB.demut().get_function("slice_array");
 
 let RYND_PRINT = RYND_LIB.demut().get_function("print_array");
 
@@ -140,6 +143,48 @@ op<L, R> (a: 'L [NDArrayBase]) != (b: 'R [NDArrayBase]) -> NDArray {
 
 op<L, R> (a: 'L [NDArrayBase])[b: 'R [NDArrayBase]] -> NDArray {
     return NDArray(RYND_IDX.demut().call(a.ptr(), b.ptr()).as<Pointer>());
+}
+
+op<L> (a: 'L [NDArrayBase])[s0: Slice] -> NDArray {
+    return NDArray(RYND_SLICE.demut().call(a.ptr(), 1, *s0.from_idx, *s0.to_idx, *s0.step).as<Pointer>());
+}
+
+op<L> (a: 'L [NDArrayBase])[s0: Slice, s1: Slice] -> NDArray {
+    return NDArray(
+        RYND_SLICE.demut().call(a.ptr(), 2, 
+        *s0.from_idx, *s0.to_idx, *s0.step, 
+        *s1.from_idx, *s1.to_idx, *s1.step
+    ).as<Pointer>());
+}
+
+op<L> (a: 'L [NDArrayBase])[s0: Slice, s1: Slice, s2: Slice] -> NDArray {
+    return NDArray(
+        RYND_SLICE.demut().call(a.ptr(), 3, 
+        *s0.from_idx, *s0.to_idx, *s0.step, 
+        *s1.from_idx, *s1.to_idx, *s1.step, 
+        *s2.from_idx, *s2.to_idx, *s2.step
+    ).as<Pointer>());
+}
+
+op<L> (a: 'L [NDArrayBase])[s0: Slice, s1: Slice, s2: Slice, s3: Slice] -> NDArray {
+    return NDArray(
+        RYND_SLICE.demut().call(a.ptr(), 4, 
+        *s0.from_idx, *s0.to_idx, *s0.step, 
+        *s1.from_idx, *s1.to_idx, *s1.step, 
+        *s2.from_idx, *s2.to_idx, *s2.step, 
+        *s3.from_idx, *s3.to_idx, *s3.step
+    ).as<Pointer>());
+}
+
+op<L> (a: 'L [NDArrayBase])[s0: Slice, s1: Slice, s2: Slice, s3: Slice, s4: Slice] -> NDArray {
+    return NDArray(
+        RYND_SLICE.demut().call(a.ptr(), 5, 
+        *s0.from_idx, *s0.to_idx, *s0.step, 
+        *s1.from_idx, *s1.to_idx, *s1.step, 
+        *s2.from_idx, *s2.to_idx, *s2.step, 
+        *s3.from_idx, *s3.to_idx, *s3.step, 
+        *s4.from_idx, *s4.to_idx, *s4.step
+    ).as<Pointer>());
 }
 
 // Formatting

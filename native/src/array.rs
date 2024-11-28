@@ -1,5 +1,7 @@
 use std::fmt::Display;
 
+use ndarray::Slice;
+
 use crate::{owned::{NDArrayOwned, NDArrayType}, rynd_error, view::NDArrayView};
 
 #[derive(Clone)]
@@ -73,6 +75,13 @@ impl NDArray {
         match self {
             NDArray::Owned(a) => a.reshape(shape).into(),
             NDArray::View(v) => v.reshape(shape).into(),
+        }
+    }
+
+    pub fn slice(&mut self, slices: Vec<Slice>) -> Self {
+        match self {
+            NDArray::Owned(a) => a.view().slice(slices).into(),
+            NDArray::View(v) => v.slice(slices).into(),
         }
     }
     

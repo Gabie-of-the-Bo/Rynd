@@ -1,4 +1,4 @@
-use ndarray::{Array1, ArrayBase, ArrayViewD, Axis, Dim, IxDynImpl, OwnedRepr, RawArrayViewMut, Zip};
+use ndarray::{Array1, ArrayBase, ArrayViewD, Axis, Dim, IxDynImpl, OwnedRepr, RawArrayViewMut, Slice, Zip};
 
 use crate::{owned::NDArrayOwned, rynd_error};
 
@@ -227,6 +227,12 @@ impl NDArrayView {
 
     pub fn reshape(&mut self, shape: Vec<usize>) -> NDArrayView {
         match_op!(self, a, view_mut!(a).into_shape_with_order(shape).unwrap().raw_view_mut().into())
+    }
+
+    pub fn slice(&mut self, slices: Vec<Slice>) -> NDArrayView {
+        match_op!(self, a, view_mut!(a).slice_each_axis_mut(|ax| {
+            slices.get(ax.axis.index()).cloned().unwrap_or_else(|| Slice::new(0, None, 1))
+        }).raw_view_mut().into())
     }
 }
 
