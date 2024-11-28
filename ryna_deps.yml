@@ -1,0 +1,5 @@
+---
+module_name: Rynd
+version: 0.1.0
+build: cd native && cargo build --release
+modules: {}
