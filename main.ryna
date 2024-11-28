@@ -19,6 +19,7 @@ let RYND_IDX = RYND_LIB.demut().get_function("index_arrays");
 
 let RYND_IOTA = RYND_LIB.demut().get_function("iota");
 let RYND_LINSPACE = RYND_LIB.demut().get_function("linspace");
+let RYND_RESHAPE = RYND_LIB.demut().get_function("reshape_array");
 
 let RYND_PRINT = RYND_LIB.demut().get_function("print_array");
 
@@ -69,6 +70,26 @@ fn linspace(f: Int, t: Int) -> NDArray {
 
 fn linspace(f: Int, t: Int, s: Int) -> NDArray {
     return NDArray(RYND_LINSPACE.demut().call(*f, *t, *s).as<Pointer>());
+}
+
+fn<T> reshape(arr: 'T [NDArrayBase], d0: Int) -> NDArray {
+    return NDArray(RYND_RESHAPE.demut().call(arr.ptr(), 1, *d0).as<Pointer>());
+}
+
+fn<T> reshape(arr: 'T [NDArrayBase], d0: Int, d1: Int) -> NDArray {
+    return NDArray(RYND_RESHAPE.demut().call(arr.ptr(), 2, *d0, *d1).as<Pointer>());
+}
+
+fn<T> reshape(arr: 'T [NDArrayBase], d0: Int, d1: Int, d2: Int) -> NDArray {
+    return NDArray(RYND_RESHAPE.demut().call(arr.ptr(), 3, *d0, *d1, *d2).as<Pointer>());
+}
+
+fn<T> reshape(arr: 'T [NDArrayBase], d0: Int, d1: Int, d2: Int, d3: Int) -> NDArray {
+    return NDArray(RYND_RESHAPE.demut().call(arr.ptr(), 4, *d0, *d1, *d2, *d3).as<Pointer>());
+}
+
+fn<T> reshape(arr: 'T [NDArrayBase], d0: Int, d1: Int, d2: Int, d3: Int, d4: Int) -> NDArray {
+    return NDArray(RYND_RESHAPE.demut().call(arr.ptr(), 5, *d0, *d1, *d2, *d3, *d4).as<Pointer>());
 }
 
 fn<L, R> pow(a: 'L [NDArrayBase], b: 'R [NDArrayBase]) -> NDArray {

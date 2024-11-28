@@ -1,6 +1,6 @@
 use std::fmt::Display;
 
-use crate::{owned::{NDArrayOwned, NDArrayType}, view::NDArrayView};
+use crate::{owned::{NDArrayOwned, NDArrayType}, rynd_error, view::NDArrayView};
 
 #[derive(Clone)]
 pub enum NDArray {
@@ -22,7 +22,7 @@ impl From<NDArrayView> for NDArray {
 
 macro_rules! view_binop {
     ($name: ident) => {
-        pub fn $name(&self, other: &NDArray) -> NDArray {
+        pub fn $name(&mut self, other: &mut NDArray) -> NDArray {
             NDArray::from(self.view().$name(&other.view()))
         }
     };
@@ -33,27 +33,49 @@ impl NDArray {
         NDArray::from(NDArrayOwned::new(tp, shape))
     }
 
-    pub fn view(&self) -> NDArrayView {
+    pub fn shape(&self) -> &[usize] {
+        match self {
+            NDArray::Owned(a) => a.shape(),
+            NDArray::View(v) => v.shape(),
+        }
+    }
+
+    pub fn view(&mut self) -> NDArrayView {
         match self {
             NDArray::Owned(a) => a.view(),
             NDArray::View(v) => v.clone(),
         }
     }
 
-    pub fn cast(&self, tp: NDArrayType) -> Self {
+    pub fn cast(&mut self, tp: NDArrayType) -> Self {
         match self {
             NDArray::Owned(a) => a.cast(tp).into(),
             NDArray::View(v) => v.owned().cast(tp).into(),
         }
     }
 
-    pub fn index(&self, idx: &NDArray) -> Self {
+    pub fn index(&mut self, idx: &mut NDArray) -> Self {
         let obj = self.view();
         let idx_view = idx.view();
 
         obj.index(&idx_view).into()
     }
 
+    fn compatible_shapes(a: &[usize], b: &[usize]) -> bool {
+        a.iter().product::<usize>() == b.iter().product::<usize>()
+    }
+
+    pub fn reshape(&mut self, shape: Vec<usize>) -> Self {
+        if !Self::compatible_shapes(self.shape(), &shape) {
+            rynd_error!("Unable to reshape array with shape {:?} to shape {:?}", self.shape(), shape);
+        }
+
+        match self {
+            NDArray::Owned(a) => a.reshape(shape).into(),
+            NDArray::View(v) => v.reshape(shape).into(),
+        }
+    }
+    
     view_binop!(sum);
     view_binop!(sub);
     view_binop!(mul);
@@ -65,6 +87,9 @@ impl NDArray {
 
 impl Display for NDArray {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.view())
+        match self {
+            NDArray::Owned(a) => write!(f, "{}", a),
+            NDArray::View(v) => write!(f, "{}", v),
+        }
     }
 }

@@ -1,7 +1,7 @@
 use std::io::Write;
 
 use array::NDArray;
-use memory::{register_and_leak, free_array_ptr, ptr_to_ref};
+use memory::{free_array_ptr, ptr_to_ref, register_and_leak, register_view};
 use owned::NDArrayOwned;
 use rynaffi::{ryna_ffi_function, FFIArgs, FFIReturn};
 
@@ -46,7 +46,7 @@ macro_rules! binop_rynd_ffi {
             let a = ptr_to_ref(args[0].as_ptr());
             let b = ptr_to_ref(args[1].as_ptr());
         
-            let res = Box::new(a.$name(&b));
+            let res = Box::new(a.$name(b));
         
             unsafe { *out = register_and_leak(res).into(); }
         });                
@@ -79,6 +79,20 @@ ryna_ffi_function!(linspace(args, out) {
     let array = Box::new(NDArrayOwned::linspace(f, t, s).into());
 
     unsafe { *out = register_and_leak(array).into(); }
+});
+
+ryna_ffi_function!(reshape_array(args, out) {
+    let arr_ptr = args[0].as_ptr();
+    let arr = ptr_to_ref(arr_ptr);
+    let num_dims = args[1].as_i64() as usize;
+    let shape = args[2..2 + num_dims].into_iter().map(|i| i.as_i64() as usize).collect::<Vec<_>>();
+
+    let res = Box::new(arr.reshape(shape));
+    let view_ptr = register_and_leak(res);
+
+    register_view(arr_ptr, view_ptr);
+
+    unsafe { *out = view_ptr.into(); }
 });
 
 // Utility

@@ -45,6 +45,16 @@ impl From<ArrayD<bool>> for NDArrayOwned {
     }
 }
 
+macro_rules! match_op {
+    ($obj: expr, $n: ident, $op: expr) => {
+        match $obj {
+            NDArrayOwned::Int($n) => $op,
+            NDArrayOwned::Float($n) => $op,
+            NDArrayOwned::Bool($n) => $op,
+        }
+    };
+}
+
 impl NDArrayOwned {
     pub fn new(tp: NDArrayType, shape: Vec<usize>) -> Self {
         match tp {
@@ -52,6 +62,10 @@ impl NDArrayOwned {
             NDArrayType::Float => NDArrayOwned::Float(ArrayD::default(shape)),
             NDArrayType::Bool => NDArrayOwned::Bool(ArrayD::default(shape)),
         }
+    }
+
+    pub fn shape(&self) -> &[usize] {
+        match_op!(self, a, a.shape())
     }
 
     pub fn iota(l: i64) -> Self {
@@ -62,15 +76,11 @@ impl NDArrayOwned {
         NDArrayOwned::from(Array1::<i64>::from_iter((f..t).step_by(s)).into_dyn())
     }
 
-    pub fn view(&self) -> NDArrayView {
-        match self {
-            NDArrayOwned::Int(a) => NDArrayView::Int(a.raw_view()),
-            NDArrayOwned::Float(a) => NDArrayView::Float(a.raw_view()),
-            NDArrayOwned::Bool(a) => NDArrayView::Bool(a.raw_view()),
-        }
+    pub fn view(&mut self) -> NDArrayView {
+        match_op!(self, a, a.raw_view_mut().into())
     }
 
-    pub fn cast(&self, tp: NDArrayType) -> Self {
+    pub fn cast(&mut self, tp: NDArrayType) -> Self {
         match (tp, self) {
             (NDArrayType::Int, NDArrayOwned::Int(array)) => NDArrayOwned::from(array.clone()),
             (NDArrayType::Int, NDArrayOwned::Float(array)) => NDArrayOwned::from(array.mapv(|i| i as i64)),
@@ -83,14 +93,14 @@ impl NDArrayOwned {
             (NDArrayType::Bool, NDArrayOwned::Bool(array)) => NDArrayOwned::from(array.clone()),
         }
     }
+
+    pub fn reshape(&mut self, shape: Vec<usize>) -> NDArrayView {
+        match_op!(self, a, a.view_mut().into_shape_with_order(shape).unwrap().raw_view_mut().into())
+    }
 }
 
 impl std::fmt::Display for NDArrayOwned {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            NDArrayOwned::Int(array) => write!(f, "{array}"),
-            NDArrayOwned::Float(array) => write!(f, "{array}"),
-            NDArrayOwned::Bool(array) => write!(f, "{array}"),
-        }
+        match_op!(self, a, write!(f, "{a}"))
     }
 }

@@ -1,8 +1,8 @@
-use ndarray::{Array1, ArrayBase, ArrayViewD, Axis, Dim, IxDynImpl, OwnedRepr, RawArrayView, Zip};
+use ndarray::{Array1, ArrayBase, ArrayViewD, Axis, Dim, IxDynImpl, OwnedRepr, RawArrayViewMut, Zip};
 
 use crate::{owned::NDArrayOwned, rynd_error};
 
-type DynRawArrayView<T> = RawArrayView<T, Dim<IxDynImpl>>;
+type DynRawArrayView<T> = RawArrayViewMut<T, Dim<IxDynImpl>>;
 #[derive(Clone)]
 pub enum NDArrayView {
     Int(DynRawArrayView<i64>),
@@ -28,9 +28,25 @@ impl From<DynRawArrayView<bool>> for NDArrayView {
     }
 }
 
+macro_rules! match_op {
+    ($obj: expr, $n: ident, $op: expr) => {
+        match $obj {
+            NDArrayView::Int($n) => $op,
+            NDArrayView::Float($n) => $op,
+            NDArrayView::Bool($n) => $op,
+        }
+    };
+}
+
 macro_rules! view {
     ($raw: expr) => {
         &unsafe { $raw.clone().deref_into_view() }  
+    };
+}
+
+macro_rules! view_mut {
+    ($raw: expr) => {
+        unsafe { $raw.clone().deref_into_view_mut() }  
     };
 }
 
@@ -80,11 +96,11 @@ macro_rules! zip_op {
 
 impl NDArrayView {
     pub fn owned(&self) -> NDArrayOwned {
-        match self {
-            NDArrayView::Int(v) => view!(v).to_owned().into(),
-            NDArrayView::Float(v) => view!(v).to_owned().into(),
-            NDArrayView::Bool(v) => view!(v).to_owned().into(),
-        }
+        match_op!(self, v, view!(v).to_owned().into())
+    }
+
+    pub fn shape(&self) -> &[usize] {
+        match_op!(self, a, a.shape())
     }
 
     pub fn sum(&self, other: &NDArrayView) -> NDArrayOwned {
@@ -208,14 +224,14 @@ impl NDArrayView {
             (_, NDArrayView::Float(_)) => rynd_error!("Unable to use float as an index"),
         }
     }
+
+    pub fn reshape(&mut self, shape: Vec<usize>) -> NDArrayView {
+        match_op!(self, a, view_mut!(a).into_shape_with_order(shape).unwrap().raw_view_mut().into())
+    }
 }
 
 impl std::fmt::Display for NDArrayView {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            NDArrayView::Int(a) => write!(f, "{}", view!(a)),
-            NDArrayView::Float(a) => write!(f, "{}", view!(a)),
-            NDArrayView::Bool(a) => write!(f, "{}", view!(a)),
-        }
+        match_op!(self, a, write!(f, "{}", view!(a)))
     }
 }
