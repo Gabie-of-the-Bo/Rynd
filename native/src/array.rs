@@ -30,6 +30,14 @@ macro_rules! view_binop {
     };
 }
 
+macro_rules! view_binop_scalar {
+    ($name: ident, $t: ty) => {
+        pub fn $name(&mut self, scalar: $t, reverse: bool) -> NDArray {
+            NDArray::from(self.view().$name(scalar, reverse))
+        }
+    };
+}
+
 impl NDArray {
     pub fn new(tp: NDArrayType, shape: Vec<usize>) -> Self {
         NDArray::from(NDArrayOwned::new(tp, shape))
@@ -115,6 +123,24 @@ impl NDArray {
     view_binop!(pow);
     view_binop!(eq);
     view_binop!(neq);
+
+    view_binop_scalar!(sum_scalar_i64, i64);
+    view_binop_scalar!(sum_scalar_f64, f64);
+
+    view_binop_scalar!(sub_scalar_i64, i64);
+    view_binop_scalar!(sub_scalar_f64, f64);
+
+    view_binop_scalar!(mul_scalar_i64, i64);
+    view_binop_scalar!(mul_scalar_f64, f64);
+
+    view_binop_scalar!(div_scalar_i64, i64);
+    view_binop_scalar!(div_scalar_f64, f64);
+
+    view_binop_scalar!(eq_scalar_i64, i64);
+    view_binop_scalar!(eq_scalar_f64, f64);
+
+    view_binop_scalar!(neq_scalar_i64, i64);
+    view_binop_scalar!(neq_scalar_f64, f64);
 }
 
 impl Display for NDArray {

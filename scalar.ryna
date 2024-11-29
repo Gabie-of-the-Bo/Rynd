@@ -1,0 +1,63 @@
+interface Scalar<T> {
+    fn scalar(obj: Self) -> 'T;
+}
+
+fn scalar(obj: Int) -> Int {
+    return *obj;
+}
+
+fn scalar(obj: &Int) -> Int {
+    return *obj;
+}
+
+fn scalar(obj: @Int) -> Int {
+    return *obj;
+}
+
+implement Scalar<Int> for Int;
+implement Scalar<Int> for &Int;
+implement Scalar<Int> for @Int;
+
+fn scalar(obj: Float) -> Float {
+    return *obj;
+}
+
+fn scalar(obj: &Float) -> Float {
+    return *obj;
+}
+
+fn scalar(obj: @Float) -> Float {
+    return *obj;
+}
+
+implement Scalar<Float> for Float;
+implement Scalar<Float> for &Float;
+implement Scalar<Float> for @Float;
+
+fn scalar(obj: Bool) -> Int {
+    if obj {
+        return 1;
+    }
+
+    return 0;
+}
+
+fn scalar(obj: &Bool) -> Int {
+    if obj {
+        return 1;
+    }
+
+    return 0;
+}
+
+fn scalar(obj: @Bool) -> Int {
+    if obj {
+        return 1;
+    }
+
+    return 0;
+}
+
+implement Scalar<Int> for Bool;
+implement Scalar<Int> for &Bool;
+implement Scalar<Int> for @Bool;

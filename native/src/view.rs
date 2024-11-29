@@ -28,6 +28,31 @@ impl From<DynRawArrayView<bool>> for NDArrayView {
     }
 }
 
+macro_rules! scalar_op {
+    ($obj: expr, $n: ident, $reverse: ident, $scalar: expr, $op: tt, $l_op: tt) => {
+        match ($obj, $reverse) {
+            (NDArrayView::Int($n), false) => view!($n).mapv(|i| i $op $scalar as i64).into(),
+            (NDArrayView::Float($n), false) => view!($n).mapv(|i| i $op $scalar as f64).into(),
+            (NDArrayView::Bool($n), false) => view!($n).mapv(|i| i $l_op ($scalar as i64 != 0)).into(),
+            (NDArrayView::Int($n), true) => view!($n).mapv(|i| $scalar as i64 $op i).into(),
+            (NDArrayView::Float($n), true) => view!($n).mapv(|i| $scalar as f64 $op i).into(),
+            (NDArrayView::Bool($n), true) => view!($n).mapv(|i| ($scalar as i64 != 0) $l_op i).into(),
+        }
+    };
+}
+
+macro_rules! scalar_op_def {
+    ($name1: ident, $name2: ident, $op: tt, $l_op: tt) => {
+        pub fn $name1(&self, scalar: i64, reverse: bool) -> NDArrayOwned {
+            scalar_op!(self, a, reverse, scalar, $op, $l_op)
+        }
+        
+        pub fn $name2(&self, scalar: f64, reverse: bool) -> NDArrayOwned {
+            scalar_op!(self, a, reverse, scalar, $op, $l_op)
+        }
+    };
+}
+
 macro_rules! match_op {
     ($obj: expr, $n: ident, $op: expr) => {
         match $obj {
@@ -139,6 +164,28 @@ impl NDArrayView {
             (NDArrayView::Bool(a), NDArrayView::Float(b)) => NDArrayOwned::from(arr_zip!(a, b, (*a as i64 as f64).powf(*b as f64))),
             (NDArrayView::Bool(a), NDArrayView::Bool(b)) => NDArrayOwned::from(view!(a) & view!(b)),
         }
+    }
+
+    scalar_op_def!(sum_scalar_i64, sum_scalar_f64, +, ^);
+    scalar_op_def!(sub_scalar_i64, sub_scalar_f64, -, ^);
+    scalar_op_def!(mul_scalar_i64, mul_scalar_f64, *, &);
+    scalar_op_def!(eq_scalar_i64, eq_scalar_f64, ==, ==);
+    scalar_op_def!(neq_scalar_i64, neq_scalar_f64, !=, !=);
+
+    pub fn div_scalar_i64(&self, scalar: i64, reverse: bool) -> NDArrayOwned {
+        if matches!(self, NDArrayView::Bool(_)) {
+            rynd_error!("Unable to divide boolean array");
+        }
+
+        scalar_op!(self, a, reverse, scalar, /, &)
+    }
+
+    pub fn div_scalar_f64(&self, scalar: f64, reverse: bool) -> NDArrayOwned {
+        if matches!(self, NDArrayView::Bool(_)) {
+            rynd_error!("Unable to divide boolean array");
+        }
+
+        scalar_op!(self, a, reverse, scalar, /, &)
     }
 
     fn mask<T>(v: &DynRawArrayView<T>, mask: &DynRawArrayView<bool>) -> NDArrayOwned 
