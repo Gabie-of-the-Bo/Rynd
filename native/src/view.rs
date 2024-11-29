@@ -41,6 +41,19 @@ macro_rules! scalar_op {
     };
 }
 
+macro_rules! scalar_fn {
+    ($obj: expr, $n: ident, $reverse: ident, $scalar: expr, $func_f: tt, $func_i: tt, $l_op: tt) => {
+        match ($obj, $reverse) {
+            (NDArrayView::Int($n), false) => view!($n).mapv(|i| i.$func_i($scalar as u32)).into(),
+            (NDArrayView::Float($n), false) => view!($n).mapv(|i| i.$func_f($scalar as f64)).into(),
+            (NDArrayView::Bool($n), false) => view!($n).mapv(|i| i $l_op ($scalar as i64 != 0)).into(),
+            (NDArrayView::Int($n), true) => view!($n).mapv(|i| ($scalar as i64).$func_i(i as u32)).into(),
+            (NDArrayView::Float($n), true) => view!($n).mapv(|i| ($scalar as f64).$func_f(i)).into(),
+            (NDArrayView::Bool($n), true) => view!($n).mapv(|i| ($scalar as i64 != 0) $l_op i).into(),
+        }
+    };
+}
+
 macro_rules! scalar_op_def {
     ($name1: ident, $name2: ident, $op: tt, $l_op: tt) => {
         pub fn $name1(&self, scalar: i64, reverse: bool) -> NDArrayOwned {
@@ -186,6 +199,22 @@ impl NDArrayView {
         }
 
         scalar_op!(self, a, reverse, scalar, /, &)
+    }
+
+    pub fn pow_scalar_i64(&self, scalar: i64, reverse: bool) -> NDArrayOwned {
+        if matches!(self, NDArrayView::Bool(_)) {
+            rynd_error!("Unable to calculate the power of a boolean array");
+        }
+
+        scalar_fn!(self, a, reverse, scalar, powf, pow, &)
+    }
+
+    pub fn pow_scalar_f64(&self, scalar: f64, reverse: bool) -> NDArrayOwned {
+        if matches!(self, NDArrayView::Bool(_)) {
+            rynd_error!("Unable to calculate the power of a boolean array");
+        }
+
+        scalar_fn!(self, a, reverse, scalar, powf, pow, &)
     }
 
     fn mask<T>(v: &DynRawArrayView<T>, mask: &DynRawArrayView<bool>) -> NDArrayOwned 

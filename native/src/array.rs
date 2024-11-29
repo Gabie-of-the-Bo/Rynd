@@ -136,6 +136,9 @@ impl NDArray {
     view_binop_scalar!(div_scalar_i64, i64);
     view_binop_scalar!(div_scalar_f64, f64);
 
+    view_binop_scalar!(pow_scalar_i64, i64);
+    view_binop_scalar!(pow_scalar_f64, f64);
+
     view_binop_scalar!(eq_scalar_i64, i64);
     view_binop_scalar!(eq_scalar_f64, f64);
 

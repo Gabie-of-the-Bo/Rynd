@@ -28,6 +28,7 @@ let RYND_SUM_SCALAR = RYND_LIB.demut().get_function("sum_array_scalar");
 let RYND_SUB_SCALAR = RYND_LIB.demut().get_function("sub_array_scalar");
 let RYND_MUL_SCALAR = RYND_LIB.demut().get_function("mul_array_scalar");
 let RYND_DIV_SCALAR = RYND_LIB.demut().get_function("div_array_scalar");
+let RYND_POW_SCALAR = RYND_LIB.demut().get_function("pow_array_scalar");
 let RYND_EQ_SCALAR = RYND_LIB.demut().get_function("eq_array_scalar");
 let RYND_NEQ_SCALAR = RYND_LIB.demut().get_function("neq_array_scalar");
 
@@ -71,61 +72,31 @@ implement NDArrayBase for &NDArray;
 implement NDArrayBase for @NDArray;
 
 // Array creation
-fn ndarray(arr: Array<Int>) -> NDArray {
+fn write_to_ptr(ptr: Pointer, offset: Int, value: Int) {
+    write_ptr_int(*ptr, *offset, *value);
+}
+
+fn write_to_ptr(ptr: Pointer, offset: Int, value: Float) {
+    write_ptr_float(*ptr, *offset, *value);
+}
+
+fn<S, SI> ndarray(arr: Array<'S [Scalar<'SI>]>) -> NDArray {
     let ptr = MALLOC.demut().call(arr.len()).as<Pointer>();
     let offset = 0;
 
     for i in arr {
-        write_ptr_int(*ptr, *offset, *i);
+        write_to_ptr(*ptr, *offset, i.cfwd<'S>().scalar());
         offset.inc();
     }
 
-    let res = RYND_FROM_PTR.demut().call(*ptr, 1, 1, arr.len()).as<Pointer>();
+    let res = RYND_FROM_PTR.demut().call(*ptr, type(arr[0].cfwd<'S>()), 1, arr.len()).as<Pointer>();
 
     FREE.demut().call(*ptr, arr.len());
 
     return NDArray(*res);
 }
 
-fn ndarray(arr: Array<Float>) -> NDArray {
-    let ptr = MALLOC.demut().call(arr.len()).as<Pointer>();
-    let offset = 0;
-
-    for i in arr {
-        write_ptr_float(*ptr, *offset, *i);
-        offset.inc();
-    }
-
-    let res = RYND_FROM_PTR.demut().call(*ptr, 2, 1, arr.len()).as<Pointer>();
-
-    FREE.demut().call(*ptr, arr.len());
-
-    return NDArray(*res);
-}
-
-fn ndarray(arr: Array<Bool>) -> NDArray {
-    let ptr = MALLOC.demut().call(arr.len()).as<Pointer>();
-    let offset = 0;
-
-    for i in arr {
-        if i {
-            write_ptr_int(*ptr, *offset, 1);
-
-        } else {
-            write_ptr_int(*ptr, *offset, 0);
-        }
-
-        offset.inc();
-    }
-
-    let res = RYND_FROM_PTR.demut().call(*ptr, 3, 1, arr.len()).as<Pointer>();
-
-    FREE.demut().call(*ptr, arr.len());
-
-    return NDArray(*res);
-}
-
-fn ndarray(arr: Array<Array<Int>>) -> NDArray {
+fn<S, SI> ndarray(arr: Array<Array<'S [Scalar<'SI>]>>) -> NDArray {
     let height = arr.len();
     let width = arr[0].len();
     let size = height * width; 
@@ -141,74 +112,12 @@ fn ndarray(arr: Array<Array<Int>>) -> NDArray {
 
     for v in arr {
         for i in v {
-            write_ptr_int(*ptr, *offset, *i);
+            write_to_ptr(*ptr, *offset, i.cfwd<'S>().scalar());
             offset.inc();
         }
     }
 
-    let res = RYND_FROM_PTR.demut().call(*ptr, 1, 2, *height, *width).as<Pointer>();
-
-    FREE.demut().call(*ptr, *size);
-
-    return NDArray(*res);
-}
-
-fn ndarray(arr: Array<Array<Float>>) -> NDArray {
-    let height = arr.len();
-    let width = arr[0].len();
-    let size = height * width; 
-
-    for v in arr {
-        if v.len() != width {
-            panic("Unable to convert ragged array to NDArray");
-        }
-    }
-
-    let ptr = MALLOC.demut().call(*size).as<Pointer>();
-    let offset = 0;
-
-    for v in arr {
-        for i in v {
-            write_ptr_float(*ptr, *offset, *i);
-            offset.inc();
-        }
-    }
-
-    let res = RYND_FROM_PTR.demut().call(*ptr, 2, 2, *height, *width).as<Pointer>();
-
-    FREE.demut().call(*ptr, *size);
-
-    return NDArray(*res);
-}
-
-fn ndarray(arr: Array<Array<Bool>>) -> NDArray {
-    let height = arr.len();
-    let width = arr[0].len();
-    let size = height * width; 
-
-    for v in arr {
-        if v.len() != width {
-            panic("Unable to convert ragged array to NDArray");
-        }
-    }
-
-    let ptr = MALLOC.demut().call(*size).as<Pointer>();
-    let offset = 0;
-
-    for v in arr {
-        for i in v {
-            if i {
-                write_ptr_int(*ptr, *offset, 1);
-
-            } else {
-                write_ptr_int(*ptr, *offset, 0);
-            }
-
-            offset.inc();
-        }
-    }
-
-    let res = RYND_FROM_PTR.demut().call(*ptr, 2, 2, *height, *width).as<Pointer>();
+    let res = RYND_FROM_PTR.demut().call(*ptr, type((arr[0])[0].cfwd<'S>()), 2, *height, *width).as<Pointer>();
 
     FREE.demut().call(*ptr, *size);
 
@@ -253,6 +162,14 @@ fn<T> reshape(arr: 'T [NDArrayBase], d0: Int, d1: Int, d2: Int, d3: Int, d4: Int
 
 fn<L, R> pow(a: 'L [NDArrayBase], b: 'R [NDArrayBase]) -> NDArray {
     return NDArray(RYND_POW.demut().call(a.ptr(), b.ptr()).as<Pointer>());
+}
+
+fn<A, S, SI> pow(a: 'A [NDArrayBase], b: 'S [Scalar<'SI>]) -> NDArray {
+    return NDArray(RYND_POW_SCALAR.demut().call(a.ptr(), b.scalar(), 0).as<Pointer>());
+}
+
+fn<A, S, SI> pow(b: 'S [Scalar<'SI>], a: 'A [NDArrayBase]) -> NDArray {
+    return NDArray(RYND_POW_SCALAR.demut().call(a.ptr(), b.scalar(), 1).as<Pointer>());
 }
 
 fn<T> copy(arr: 'T [NDArrayBase]) -> NDArray {

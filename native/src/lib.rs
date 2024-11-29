@@ -115,6 +115,7 @@ binop_rynd_scalar_ffi!(sum_array_scalar, sum_scalar_i64, sum_scalar_f64);
 binop_rynd_scalar_ffi!(sub_array_scalar, sub_scalar_i64, sub_scalar_f64);
 binop_rynd_scalar_ffi!(mul_array_scalar, mul_scalar_i64, mul_scalar_f64);
 binop_rynd_scalar_ffi!(div_array_scalar, div_scalar_i64, div_scalar_f64);
+binop_rynd_scalar_ffi!(pow_array_scalar, pow_scalar_i64, pow_scalar_f64);
 binop_rynd_scalar_ffi!(eq_array_scalar, eq_scalar_i64, eq_scalar_f64);
 binop_rynd_scalar_ffi!(neq_array_scalar, neq_scalar_i64, neq_scalar_f64);
 

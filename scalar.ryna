@@ -1,5 +1,6 @@
 interface Scalar<T> {
     fn scalar(obj: Self) -> 'T;
+    fn type(obj: Self) -> Int;
 }
 
 fn scalar(obj: Int) -> Int {
@@ -12,6 +13,18 @@ fn scalar(obj: &Int) -> Int {
 
 fn scalar(obj: @Int) -> Int {
     return *obj;
+}
+
+fn type(obj: Int) -> Int {
+    return 1;
+}
+
+fn type(obj: &Int) -> Int {
+    return 1;
+}
+
+fn type(obj: @Int) -> Int {
+    return 1;
 }
 
 implement Scalar<Int> for Int;
@@ -28,6 +41,18 @@ fn scalar(obj: &Float) -> Float {
 
 fn scalar(obj: @Float) -> Float {
     return *obj;
+}
+
+fn type(obj: Float) -> Int {
+    return 2;
+}
+
+fn type(obj: &Float) -> Int {
+    return 2;
+}
+
+fn type(obj: @Float) -> Int {
+    return 2;
 }
 
 implement Scalar<Float> for Float;
@@ -57,6 +82,19 @@ fn scalar(obj: @Bool) -> Int {
 
     return 0;
 }
+
+fn type(obj: Bool) -> Int {
+    return 3;
+}
+
+fn type(obj: &Bool) -> Int {
+    return 3;
+}
+
+fn type(obj: @Bool) -> Int {
+    return 3;
+}
+
 
 implement Scalar<Int> for Bool;
 implement Scalar<Int> for &Bool;
