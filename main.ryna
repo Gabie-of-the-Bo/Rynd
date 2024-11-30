@@ -13,6 +13,7 @@ let RYND_FROM_PTR = RYND_LIB.demut().get_function("array_from_ptr");
 let RYND_COPY = RYND_LIB.demut().get_function("copy_array");
 let RYND_FREE = RYND_LIB.demut().get_function("free_array");
 
+let RYND_GET = RYND_LIB.demut().get_function("get_elem");
 let RYND_ASSIGN = RYND_LIB.demut().get_function("assign_arrays");
 let RYND_ASSIGN_SCALAR = RYND_LIB.demut().get_function("assign_array_scalar");
 let RYND_CAST = RYND_LIB.demut().get_function("cast_array");
@@ -186,6 +187,18 @@ fn<A, S, SI> pow(b: 'S [Scalar<'SI>], a: 'A [NDArrayBase]) -> NDArray {
 
 fn<T> copy(arr: 'T [NDArrayBase]) -> NDArray {
     return NDArray(RYND_COPY.demut().call(arr.ptr()).as<Pointer>());
+}
+
+fn<T> get_int(arr: 'T [NDArrayBase], idx: Int) -> Int {
+    return RYND_GET.demut().call(arr.ptr(), *idx, 1).as<Int>();
+}
+
+fn<T> get_float(arr: 'T [NDArrayBase], idx: Int) -> Float {
+    return RYND_GET.demut().call(arr.ptr(), *idx, 2).as<Float>();
+}
+
+fn<T> get_bool(arr: 'T [NDArrayBase], idx: Int) -> Bool {
+    return RYND_GET.demut().call(arr.ptr(), *idx, 3).as<Int>() == 1;
 }
 
 fn<L, R> assign(arr: 'L [NDArrayBase], value: 'R [NDArrayBase]) {

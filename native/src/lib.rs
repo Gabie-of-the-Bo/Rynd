@@ -3,7 +3,7 @@ use std::{io::Write, os::raw::c_void};
 use array::NDArray;
 use memory::{free_array_ptr, ptr_to_ref, register_and_leak, register_view};
 use ndarray::Slice;
-use owned::NDArrayOwned;
+use owned::{NDArrayOwned, NDArrayType};
 use rynaffi::{ryna_ffi_function, FFIArgs, FFIReturn};
 
 mod owned;
@@ -146,7 +146,24 @@ ryna_ffi_function!(assign_array_scalar(args, _out) {
         FFIValue::Float(v) => a.assign_scalar_f64(v),
         _ => unreachable!()
     };
-});        
+});     
+
+ryna_ffi_function!(get_elem(args, out) {
+    let a = ptr_to_ref(args[0].as_ptr());
+    let idx = args[1].as_i64() as usize;
+    let tp = args[2].as_i64() as usize;
+    
+    match tp.try_into() {
+        Ok(t) => {
+            match t {
+                NDArrayType::Int => unsafe { *out = a.get_i64(idx).into()},
+                NDArrayType::Float => unsafe { *out = a.get_f64(idx).into()},
+                NDArrayType::Bool => unsafe { *out = (a.get_bool(idx) as i64).into()}
+            }
+        },
+        Err(_) => rynd_error!("Invalid array type {tp}"),
+    };
+});     
 
 // Common array operations
 ryna_ffi_function!(iota(args, out) {

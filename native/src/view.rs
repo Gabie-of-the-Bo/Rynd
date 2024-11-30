@@ -155,6 +155,30 @@ impl NDArrayView {
         }
     }
 
+    pub fn get_i64(&self, idx: usize) -> i64 {
+        match self {
+            NDArrayView::Int(a) => view!(a)[idx],
+            NDArrayView::Float(a) => view!(a)[idx] as i64,
+            NDArrayView::Bool(a) => view!(a)[idx] as i64,
+        }
+    }
+
+    pub fn get_f64(&self, idx: usize) -> f64 {
+        match self {
+            NDArrayView::Int(a) => view!(a)[idx] as f64,
+            NDArrayView::Float(a) => view!(a)[idx],
+            NDArrayView::Bool(a) => view!(a)[idx] as i64 as f64,
+        }
+    }
+
+    pub fn get_bool(&self, idx: usize) -> bool {
+        match self {
+            NDArrayView::Int(a) => view!(a)[idx] != 0,
+            NDArrayView::Float(a) => view!(a)[idx] != 0.0,
+            NDArrayView::Bool(a) => view!(a)[idx],
+        }
+    }
+
     pub fn assign_scalar_i64(&self, other: i64) {
         match self {
             NDArrayView::Int(a) => view_mut!(a).iter_mut().for_each(|i| *i = other),

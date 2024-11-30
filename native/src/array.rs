@@ -87,6 +87,27 @@ impl NDArray {
         }
     }
 
+    pub fn get_i64(&mut self, idx: usize) -> i64 {
+        match self {
+            NDArray::Owned(a) => a.view().get_i64(idx),
+            NDArray::View(v) => v.get_i64(idx),
+        }
+    }
+
+    pub fn get_f64(&mut self, idx: usize) -> f64 {
+        match self {
+            NDArray::Owned(a) => a.view().get_f64(idx),
+            NDArray::View(v) => v.get_f64(idx),
+        }
+    }
+
+    pub fn get_bool(&mut self, idx: usize) -> bool {
+        match self {
+            NDArray::Owned(a) => a.view().get_bool(idx),
+            NDArray::View(v) => v.get_bool(idx),
+        }
+    }
+
     pub fn index(&mut self, idx: &mut NDArray) -> Self {
         let obj = self.view();
         let idx_view = idx.view();
