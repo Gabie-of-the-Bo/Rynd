@@ -137,10 +137,6 @@ impl NDArrayView {
         match_op!(self, v, view!(v).to_owned().into())
     }
 
-    pub fn shape(&self) -> &[usize] {
-        match_op!(self, a, a.shape())
-    }
-
     pub fn assign(&self, other: &NDArrayView) {
         match (self, other) {
             (NDArrayView::Int(a), NDArrayView::Int(b)) => view_mut!(a).zip_mut_with(view!(b), |i, v| *i = *v),
@@ -153,6 +149,14 @@ impl NDArrayView {
             (NDArrayView::Bool(a), NDArrayView::Float(b)) => view_mut!(a).zip_mut_with(view!(b), |i, v| *i = *v != 0.0),
             (NDArrayView::Bool(a), NDArrayView::Bool(b)) => view_mut!(a).zip_mut_with(view!(b), |i, v| *i = *v),
         }
+    }
+
+    pub fn len(&self) -> usize {
+        match_op!(self, a, a.len())
+    }
+
+    pub fn shape(&self) -> &[usize] {
+        match_op!(self, a, a.shape())
     }
 
     pub fn get_i64(&self, idx: usize) -> i64 {

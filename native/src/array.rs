@@ -87,6 +87,13 @@ impl NDArray {
         }
     }
 
+    pub fn len(&self) -> usize {
+        match self {
+            NDArray::Owned(a) => a.len(),
+            NDArray::View(v) => v.len(),
+        }
+    }
+
     pub fn get_i64(&mut self, idx: usize) -> i64 {
         match self {
             NDArray::Owned(a) => a.view().get_i64(idx),

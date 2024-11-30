@@ -2,7 +2,7 @@ use std::{io::Write, os::raw::c_void};
 
 use array::NDArray;
 use memory::{free_array_ptr, ptr_to_ref, register_and_leak, register_view};
-use ndarray::Slice;
+use ndarray::{Array1, Slice};
 use owned::{NDArrayOwned, NDArrayType};
 use rynaffi::{ryna_ffi_function, FFIArgs, FFIReturn};
 
@@ -135,6 +135,20 @@ binop_rynd_scalar_ffi!(lt_array_scalar, lt_scalar_i64, lt_scalar_f64);
 binop_rynd_scalar_ffi!(gt_array_scalar, gt_scalar_i64, gt_scalar_f64);
 binop_rynd_scalar_ffi!(leq_array_scalar, leq_scalar_i64, leq_scalar_f64);
 binop_rynd_scalar_ffi!(geq_array_scalar, geq_scalar_i64, geq_scalar_f64);
+
+ryna_ffi_function!(len(args, out) {
+    let a = ptr_to_ref(args[0].as_ptr());
+
+    unsafe { *out = (a.len() as i64).into(); }
+});
+
+ryna_ffi_function!(shape(args, out) {
+    let a = ptr_to_ref(args[0].as_ptr());
+
+    let res = NDArrayOwned::from(Array1::from_iter(a.shape().iter().map(|i| *i as i64)).into_dyn()).into();
+
+    unsafe { *out = register_and_leak(Box::new(res)).into(); }
+});
 
 ryna_ffi_function!(assign_array_scalar(args, _out) {
     use rynaffi::FFIValue;

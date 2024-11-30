@@ -13,6 +13,8 @@ let RYND_FROM_PTR = RYND_LIB.demut().get_function("array_from_ptr");
 let RYND_COPY = RYND_LIB.demut().get_function("copy_array");
 let RYND_FREE = RYND_LIB.demut().get_function("free_array");
 
+let RYND_LEN = RYND_LIB.demut().get_function("len");
+let RYND_SHAPE = RYND_LIB.demut().get_function("shape");
 let RYND_GET = RYND_LIB.demut().get_function("get_elem");
 let RYND_ASSIGN = RYND_LIB.demut().get_function("assign_arrays");
 let RYND_ASSIGN_SCALAR = RYND_LIB.demut().get_function("assign_array_scalar");
@@ -207,6 +209,14 @@ fn<L, R> assign(arr: 'L [NDArrayBase], value: 'R [NDArrayBase]) {
 
 fn<T, S, SI> assign(arr: 'T [NDArrayBase], value: 'S [Scalar<'SI>]) {
     RYND_ASSIGN_SCALAR.demut().call(arr.ptr(), value.scalar());
+}
+
+fn<T> len(arr: 'T [NDArrayBase]) -> Int {
+    return RYND_LEN.demut().call(arr.ptr()).as<Int>();
+}
+
+fn<T> shape(arr: 'T [NDArrayBase]) -> NDArray {
+    return NDArray(RYND_SHAPE.demut().call(arr.ptr()).as<Pointer>());
 }
 
 // Casts

@@ -64,6 +64,10 @@ impl NDArrayOwned {
         }
     }
 
+    pub fn len(&self) -> usize {
+        match_op!(self, a, a.len())
+    }
+
     pub fn shape(&self) -> &[usize] {
         match_op!(self, a, a.shape())
     }
