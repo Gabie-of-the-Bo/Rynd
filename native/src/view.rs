@@ -34,8 +34,8 @@ macro_rules! scalar_op {
             (NDArrayView::Int($n), false) => view!($n).mapv(|i| i $op $scalar as i64).into(),
             (NDArrayView::Float($n), false) => view!($n).mapv(|i| i $op $scalar as f64).into(),
             (NDArrayView::Bool($n), false) => view!($n).mapv(|i| i $l_op ($scalar as i64 != 0)).into(),
-            (NDArrayView::Int($n), true) => view!($n).mapv(|i| $scalar as i64 $op i).into(),
-            (NDArrayView::Float($n), true) => view!($n).mapv(|i| $scalar as f64 $op i).into(),
+            (NDArrayView::Int($n), true) => view!($n).mapv(|i| ($scalar as i64) $op i).into(),
+            (NDArrayView::Float($n), true) => view!($n).mapv(|i| ($scalar as f64) $op i).into(),
             (NDArrayView::Bool($n), true) => view!($n).mapv(|i| ($scalar as i64 != 0) $l_op i).into(),
         }
     };
@@ -120,13 +120,13 @@ macro_rules! zip_op {
     ($a: ident, $b: ident, $aa: ident, $bb: ident, $op: tt) => {
         match ($a, $b) {
             (NDArrayView::Int($aa), NDArrayView::Int($bb)) => NDArrayOwned::from(arr_zip!($aa, $bb, $aa $op $bb)),
-            (NDArrayView::Int($aa), NDArrayView::Float($bb)) => NDArrayOwned::from(arr_zip!($aa, $bb, *$aa as f64 $op *$bb)),
+            (NDArrayView::Int($aa), NDArrayView::Float($bb)) => NDArrayOwned::from(arr_zip!($aa, $bb, (*$aa as f64) $op *$bb)),
             (NDArrayView::Int($aa), NDArrayView::Bool($bb)) => NDArrayOwned::from(arr_zip!($aa, $bb, *$aa $op *$bb as i64)),
             (NDArrayView::Float($aa), NDArrayView::Int($bb)) => NDArrayOwned::from(arr_zip!($aa, $bb, *$aa $op *$bb as f64)),
             (NDArrayView::Float($aa), NDArrayView::Float($bb)) => NDArrayOwned::from(arr_zip!($aa, $bb, $aa $op $bb)),
             (NDArrayView::Float($aa), NDArrayView::Bool($bb)) => NDArrayOwned::from(arr_zip!($aa, $bb, *$aa $op *$bb as i64 as f64)),
-            (NDArrayView::Bool($aa), NDArrayView::Int($bb)) => NDArrayOwned::from(arr_zip!($aa, $bb, *$aa as i64 $op *$bb)),
-            (NDArrayView::Bool($aa), NDArrayView::Float($bb)) => NDArrayOwned::from(arr_zip!($aa, $bb, *$aa as i64 as f64 $op *$bb)),
+            (NDArrayView::Bool($aa), NDArrayView::Int($bb)) => NDArrayOwned::from(arr_zip!($aa, $bb, (*$aa as i64) $op *$bb)),
+            (NDArrayView::Bool($aa), NDArrayView::Float($bb)) => NDArrayOwned::from(arr_zip!($aa, $bb, (*$aa as i64 as f64) $op *$bb)),
             (NDArrayView::Bool($aa), NDArrayView::Bool($bb)) => NDArrayOwned::from(arr_zip!($aa, $bb, $aa $op $bb)),
         }
     };
@@ -157,12 +157,32 @@ impl NDArrayView {
         broadcast_op_general!(self, other, _a, _b, *, rynd_error!("Unable to divide two boolean arrays"))
     }
 
+    pub fn modulo(&self, other: &NDArrayView) -> NDArrayOwned {
+        broadcast_op_general!(self, other, _a, _b, %, rynd_error!("Unable to divide two boolean arrays"))
+    }
+
     pub fn eq(&self, other: &NDArrayView) -> NDArrayOwned {
         zip_op!(self, other, a, b, ==)
     }
 
     pub fn neq(&self, other: &NDArrayView) -> NDArrayOwned {
         zip_op!(self, other, a, b, !=)
+    }
+
+    pub fn lt(&self, other: &NDArrayView) -> NDArrayOwned {
+        zip_op!(self, other, a, b, <)
+    }
+
+    pub fn gt(&self, other: &NDArrayView) -> NDArrayOwned {
+        zip_op!(self, other, a, b, >)
+    }
+
+    pub fn leq(&self, other: &NDArrayView) -> NDArrayOwned {
+        zip_op!(self, other, a, b, <=)
+    }
+
+    pub fn geq(&self, other: &NDArrayView) -> NDArrayOwned {
+        zip_op!(self, other, a, b, >=)
     }
 
     pub fn pow(&self, other: &NDArrayView) -> NDArrayOwned {
@@ -184,6 +204,10 @@ impl NDArrayView {
     scalar_op_def!(mul_scalar_i64, mul_scalar_f64, *, &);
     scalar_op_def!(eq_scalar_i64, eq_scalar_f64, ==, ==);
     scalar_op_def!(neq_scalar_i64, neq_scalar_f64, !=, !=);
+    scalar_op_def!(lt_scalar_i64, lt_scalar_f64, <, <);
+    scalar_op_def!(gt_scalar_i64, gt_scalar_f64, >, >);
+    scalar_op_def!(leq_scalar_i64, leq_scalar_f64, <=, <=);
+    scalar_op_def!(geq_scalar_i64, geq_scalar_f64, >=, >=);
 
     pub fn div_scalar_i64(&self, scalar: i64, reverse: bool) -> NDArrayOwned {
         if matches!(self, NDArrayView::Bool(_)) {
@@ -199,6 +223,22 @@ impl NDArrayView {
         }
 
         scalar_op!(self, a, reverse, scalar, /, &)
+    }
+
+    pub fn mod_scalar_i64(&self, scalar: i64, reverse: bool) -> NDArrayOwned {
+        if matches!(self, NDArrayView::Bool(_)) {
+            rynd_error!("Unable to divide boolean array");
+        }
+
+        scalar_op!(self, a, reverse, scalar, %, &)
+    }
+
+    pub fn mod_scalar_f64(&self, scalar: f64, reverse: bool) -> NDArrayOwned {
+        if matches!(self, NDArrayView::Bool(_)) {
+            rynd_error!("Unable to divide boolean array");
+        }
+
+        scalar_op!(self, a, reverse, scalar, %, &)
     }
 
     pub fn pow_scalar_i64(&self, scalar: i64, reverse: bool) -> NDArrayOwned {

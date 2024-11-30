@@ -120,9 +120,14 @@ impl NDArray {
     view_binop!(sub);
     view_binop!(mul);
     view_binop!(div);
+    view_binop!(modulo);
     view_binop!(pow);
     view_binop!(eq);
     view_binop!(neq);
+    view_binop!(lt);
+    view_binop!(gt);
+    view_binop!(leq);
+    view_binop!(geq);
 
     view_binop_scalar!(sum_scalar_i64, i64);
     view_binop_scalar!(sum_scalar_f64, f64);
@@ -136,6 +141,9 @@ impl NDArray {
     view_binop_scalar!(div_scalar_i64, i64);
     view_binop_scalar!(div_scalar_f64, f64);
 
+    view_binop_scalar!(mod_scalar_i64, i64);
+    view_binop_scalar!(mod_scalar_f64, f64);
+
     view_binop_scalar!(pow_scalar_i64, i64);
     view_binop_scalar!(pow_scalar_f64, f64);
 
@@ -144,6 +152,18 @@ impl NDArray {
 
     view_binop_scalar!(neq_scalar_i64, i64);
     view_binop_scalar!(neq_scalar_f64, f64);
+
+    view_binop_scalar!(lt_scalar_i64, i64);
+    view_binop_scalar!(lt_scalar_f64, f64);
+
+    view_binop_scalar!(gt_scalar_i64, i64);
+    view_binop_scalar!(gt_scalar_f64, f64);
+
+    view_binop_scalar!(leq_scalar_i64, i64);
+    view_binop_scalar!(leq_scalar_f64, f64);
+
+    view_binop_scalar!(geq_scalar_i64, i64);
+    view_binop_scalar!(geq_scalar_f64, f64);
 }
 
 impl Display for NDArray {

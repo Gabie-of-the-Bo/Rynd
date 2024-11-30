@@ -19,18 +19,28 @@ let RYND_SUM = RYND_LIB.demut().get_function("sum_arrays");
 let RYND_SUB = RYND_LIB.demut().get_function("sub_arrays");
 let RYND_MUL = RYND_LIB.demut().get_function("mul_arrays");
 let RYND_DIV = RYND_LIB.demut().get_function("div_arrays");
+let RYND_MOD = RYND_LIB.demut().get_function("mod_arrays");
 let RYND_POW = RYND_LIB.demut().get_function("pow_arrays");
 let RYND_EQ  = RYND_LIB.demut().get_function("eq_arrays");
 let RYND_NEQ = RYND_LIB.demut().get_function("neq_arrays");
+let RYND_LT = RYND_LIB.demut().get_function("lt_arrays");
+let RYND_GT = RYND_LIB.demut().get_function("gt_arrays");
+let RYND_LEQ = RYND_LIB.demut().get_function("leq_arrays");
+let RYND_GEQ = RYND_LIB.demut().get_function("geq_arrays");
 let RYND_IDX = RYND_LIB.demut().get_function("index_arrays");
 
 let RYND_SUM_SCALAR = RYND_LIB.demut().get_function("sum_array_scalar");
 let RYND_SUB_SCALAR = RYND_LIB.demut().get_function("sub_array_scalar");
 let RYND_MUL_SCALAR = RYND_LIB.demut().get_function("mul_array_scalar");
 let RYND_DIV_SCALAR = RYND_LIB.demut().get_function("div_array_scalar");
+let RYND_MOD_SCALAR = RYND_LIB.demut().get_function("mod_array_scalar");
 let RYND_POW_SCALAR = RYND_LIB.demut().get_function("pow_array_scalar");
 let RYND_EQ_SCALAR = RYND_LIB.demut().get_function("eq_array_scalar");
 let RYND_NEQ_SCALAR = RYND_LIB.demut().get_function("neq_array_scalar");
+let RYND_LT_SCALAR = RYND_LIB.demut().get_function("lt_array_scalar");
+let RYND_GT_SCALAR = RYND_LIB.demut().get_function("gt_array_scalar");
+let RYND_LEQ_SCALAR = RYND_LIB.demut().get_function("leq_array_scalar");
+let RYND_GEQ_SCALAR = RYND_LIB.demut().get_function("geq_array_scalar");
 
 let RYND_IOTA = RYND_LIB.demut().get_function("iota");
 let RYND_LINSPACE = RYND_LIB.demut().get_function("linspace");
@@ -226,6 +236,14 @@ op<A, S, SI> (b: 'S [Scalar<'SI>]) / (a: 'A [NDArrayBase]) -> NDArray {
     return NDArray(RYND_DIV_SCALAR.demut().call(a.ptr(), b.scalar(), 1).as<Pointer>());
 }
 
+op<A, S, SI> (a: 'A [NDArrayBase]) % (b: 'S [Scalar<'SI>]) -> NDArray {
+    return NDArray(RYND_MOD_SCALAR.demut().call(a.ptr(), b.scalar(), 0).as<Pointer>());
+}
+
+op<A, S, SI> (b: 'S [Scalar<'SI>]) % (a: 'A [NDArrayBase]) -> NDArray {
+    return NDArray(RYND_MOD_SCALAR.demut().call(a.ptr(), b.scalar(), 1).as<Pointer>());
+}
+
 op<A, S, SI> (a: 'A [NDArrayBase]) == (b: 'S [Scalar<'SI>]) -> NDArray {
     return NDArray(RYND_EQ_SCALAR.demut().call(a.ptr(), b.scalar(), 0).as<Pointer>());
 }
@@ -242,6 +260,38 @@ op<A, S, SI> (b: 'S [Scalar<'SI>]) != (a: 'A [NDArrayBase]) -> NDArray {
     return NDArray(RYND_NEQ_SCALAR.demut().call(a.ptr(), b.scalar(), 1).as<Pointer>());
 }
 
+op<A, S, SI> (a: 'A [NDArrayBase]) < (b: 'S [Scalar<'SI>]) -> NDArray {
+    return NDArray(RYND_LT_SCALAR.demut().call(a.ptr(), b.scalar(), 0).as<Pointer>());
+}
+
+op<A, S, SI> (b: 'S [Scalar<'SI>]) < (a: 'A [NDArrayBase]) -> NDArray {
+    return NDArray(RYND_LT_SCALAR.demut().call(a.ptr(), b.scalar(), 1).as<Pointer>());
+}
+
+op<A, S, SI> (a: 'A [NDArrayBase]) > (b: 'S [Scalar<'SI>]) -> NDArray {
+    return NDArray(RYND_GT_SCALAR.demut().call(a.ptr(), b.scalar(), 0).as<Pointer>());
+}
+
+op<A, S, SI> (b: 'S [Scalar<'SI>]) > (a: 'A [NDArrayBase]) -> NDArray {
+    return NDArray(RYND_GT_SCALAR.demut().call(a.ptr(), b.scalar(), 1).as<Pointer>());
+}
+
+op<A, S, SI> (a: 'A [NDArrayBase]) <= (b: 'S [Scalar<'SI>]) -> NDArray {
+    return NDArray(RYND_LEQ_SCALAR.demut().call(a.ptr(), b.scalar(), 0).as<Pointer>());
+}
+
+op<A, S, SI> (b: 'S [Scalar<'SI>]) <= (a: 'A [NDArrayBase]) -> NDArray {
+    return NDArray(RYND_LEQ_SCALAR.demut().call(a.ptr(), b.scalar(), 1).as<Pointer>());
+}
+
+op<A, S, SI> (a: 'A [NDArrayBase]) >= (b: 'S [Scalar<'SI>]) -> NDArray {
+    return NDArray(RYND_GEQ_SCALAR.demut().call(a.ptr(), b.scalar(), 0).as<Pointer>());
+}
+
+op<A, S, SI> (b: 'S [Scalar<'SI>]) >= (a: 'A [NDArrayBase]) -> NDArray {
+    return NDArray(RYND_GEQ_SCALAR.demut().call(a.ptr(), b.scalar(), 1).as<Pointer>());
+}
+
 op<L, R> (a: 'L [NDArrayBase]) - (b: 'R [NDArrayBase]) -> NDArray {
     return NDArray(RYND_SUB.demut().call(a.ptr(), b.ptr()).as<Pointer>());
 }
@@ -254,12 +304,32 @@ op<L, R> (a: 'L [NDArrayBase]) / (b: 'R [NDArrayBase]) -> NDArray {
     return NDArray(RYND_DIV.demut().call(a.ptr(), b.ptr()).as<Pointer>());
 }
 
+op<L, R> (a: 'L [NDArrayBase]) % (b: 'R [NDArrayBase]) -> NDArray {
+    return NDArray(RYND_MOD.demut().call(a.ptr(), b.ptr()).as<Pointer>());
+}
+
 op<L, R> (a: 'L [NDArrayBase]) == (b: 'R [NDArrayBase]) -> NDArray {
     return NDArray(RYND_EQ.demut().call(a.ptr(), b.ptr()).as<Pointer>());
 }
 
 op<L, R> (a: 'L [NDArrayBase]) != (b: 'R [NDArrayBase]) -> NDArray {
     return NDArray(RYND_NEQ.demut().call(a.ptr(), b.ptr()).as<Pointer>());
+}
+
+op<L, R> (a: 'L [NDArrayBase]) < (b: 'R [NDArrayBase]) -> NDArray {
+    return NDArray(RYND_LT.demut().call(a.ptr(), b.ptr()).as<Pointer>());
+}
+
+op<L, R> (a: 'L [NDArrayBase]) > (b: 'R [NDArrayBase]) -> NDArray {
+    return NDArray(RYND_GT.demut().call(a.ptr(), b.ptr()).as<Pointer>());
+}
+
+op<L, R> (a: 'L [NDArrayBase]) <= (b: 'R [NDArrayBase]) -> NDArray {
+    return NDArray(RYND_LEQ.demut().call(a.ptr(), b.ptr()).as<Pointer>());
+}
+
+op<L, R> (a: 'L [NDArrayBase]) >= (b: 'R [NDArrayBase]) -> NDArray {
+    return NDArray(RYND_GEQ.demut().call(a.ptr(), b.ptr()).as<Pointer>());
 }
 
 op<L, R> (a: 'L [NDArrayBase])[b: 'R [NDArrayBase]] -> NDArray {

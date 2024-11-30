@@ -88,9 +88,14 @@ binop_rynd_ffi!(sum_arrays, sum);
 binop_rynd_ffi!(sub_arrays, sub);
 binop_rynd_ffi!(mul_arrays, mul);
 binop_rynd_ffi!(div_arrays, div);
+binop_rynd_ffi!(mod_arrays, modulo);
 binop_rynd_ffi!(pow_arrays, pow);
 binop_rynd_ffi!(eq_arrays, eq);
 binop_rynd_ffi!(neq_arrays, neq);
+binop_rynd_ffi!(lt_arrays, lt);
+binop_rynd_ffi!(gt_arrays, gt);
+binop_rynd_ffi!(leq_arrays, leq);
+binop_rynd_ffi!(geq_arrays, geq);
 binop_rynd_ffi!(index_arrays, index);
 
 macro_rules! binop_rynd_scalar_ffi {
@@ -115,9 +120,14 @@ binop_rynd_scalar_ffi!(sum_array_scalar, sum_scalar_i64, sum_scalar_f64);
 binop_rynd_scalar_ffi!(sub_array_scalar, sub_scalar_i64, sub_scalar_f64);
 binop_rynd_scalar_ffi!(mul_array_scalar, mul_scalar_i64, mul_scalar_f64);
 binop_rynd_scalar_ffi!(div_array_scalar, div_scalar_i64, div_scalar_f64);
+binop_rynd_scalar_ffi!(mod_array_scalar, mod_scalar_i64, mod_scalar_f64);
 binop_rynd_scalar_ffi!(pow_array_scalar, pow_scalar_i64, pow_scalar_f64);
 binop_rynd_scalar_ffi!(eq_array_scalar, eq_scalar_i64, eq_scalar_f64);
 binop_rynd_scalar_ffi!(neq_array_scalar, neq_scalar_i64, neq_scalar_f64);
+binop_rynd_scalar_ffi!(lt_array_scalar, lt_scalar_i64, lt_scalar_f64);
+binop_rynd_scalar_ffi!(gt_array_scalar, gt_scalar_i64, gt_scalar_f64);
+binop_rynd_scalar_ffi!(leq_array_scalar, leq_scalar_i64, leq_scalar_f64);
+binop_rynd_scalar_ffi!(geq_array_scalar, geq_scalar_i64, geq_scalar_f64);
 
 // Common array operations
 ryna_ffi_function!(iota(args, out) {
