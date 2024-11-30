@@ -13,6 +13,8 @@ let RYND_FROM_PTR = RYND_LIB.demut().get_function("array_from_ptr");
 let RYND_COPY = RYND_LIB.demut().get_function("copy_array");
 let RYND_FREE = RYND_LIB.demut().get_function("free_array");
 
+let RYND_ASSIGN = RYND_LIB.demut().get_function("assign_arrays");
+let RYND_ASSIGN_SCALAR = RYND_LIB.demut().get_function("assign_array_scalar");
 let RYND_CAST = RYND_LIB.demut().get_function("cast_array");
 
 let RYND_SUM = RYND_LIB.demut().get_function("sum_arrays");
@@ -184,6 +186,14 @@ fn<A, S, SI> pow(b: 'S [Scalar<'SI>], a: 'A [NDArrayBase]) -> NDArray {
 
 fn<T> copy(arr: 'T [NDArrayBase]) -> NDArray {
     return NDArray(RYND_COPY.demut().call(arr.ptr()).as<Pointer>());
+}
+
+fn<L, R> assign(arr: 'L [NDArrayBase], value: 'R [NDArrayBase]) {
+    RYND_ASSIGN.demut().call(arr.ptr(), value.ptr());
+}
+
+fn<T, S, SI> assign(arr: 'T [NDArrayBase], value: 'S [Scalar<'SI>]) {
+    RYND_ASSIGN_SCALAR.demut().call(arr.ptr(), value.scalar());
 }
 
 // Casts

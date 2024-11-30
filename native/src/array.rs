@@ -115,6 +115,13 @@ impl NDArray {
             NDArray::View(v) => v.slice(slices).into(),
         }
     }
+
+    pub fn assign(&mut self, other: &mut NDArray) {
+        match self {
+            NDArray::Owned(a) => a.view().assign(&other.view()),
+            NDArray::View(v) => v.assign(&other.view()),
+        }
+    }
     
     view_binop!(sum);
     view_binop!(sub);
@@ -128,6 +135,20 @@ impl NDArray {
     view_binop!(gt);
     view_binop!(leq);
     view_binop!(geq);
+
+    pub fn assign_scalar_i64(&mut self, other: i64) {
+        match self {
+            NDArray::Owned(a) => a.view().assign_scalar_i64(other),
+            NDArray::View(v) => v.assign_scalar_i64(other),
+        }
+    }
+
+    pub fn assign_scalar_f64(&mut self, other: f64) {
+        match self {
+            NDArray::Owned(a) => a.view().assign_scalar_f64(other),
+            NDArray::View(v) => v.assign_scalar_f64(other),
+        }
+    }
 
     view_binop_scalar!(sum_scalar_i64, i64);
     view_binop_scalar!(sum_scalar_f64, f64);

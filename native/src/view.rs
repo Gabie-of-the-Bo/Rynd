@@ -141,6 +141,36 @@ impl NDArrayView {
         match_op!(self, a, a.shape())
     }
 
+    pub fn assign(&self, other: &NDArrayView) {
+        match (self, other) {
+            (NDArrayView::Int(a), NDArrayView::Int(b)) => view_mut!(a).zip_mut_with(view!(b), |i, v| *i = *v),
+            (NDArrayView::Int(a), NDArrayView::Float(b)) => view_mut!(a).zip_mut_with(view!(b), |i, v| *i = *v as i64),
+            (NDArrayView::Int(a), NDArrayView::Bool(b)) => view_mut!(a).zip_mut_with(view!(b), |i, v| *i = *v as i64),
+            (NDArrayView::Float(a), NDArrayView::Int(b)) => view_mut!(a).zip_mut_with(view!(b), |i, v| *i = *v as f64),
+            (NDArrayView::Float(a), NDArrayView::Float(b)) => view_mut!(a).zip_mut_with(view!(b), |i, v| *i = *v),
+            (NDArrayView::Float(a), NDArrayView::Bool(b)) => view_mut!(a).zip_mut_with(view!(b), |i, v| *i = *v as i64 as f64),
+            (NDArrayView::Bool(a), NDArrayView::Int(b)) => view_mut!(a).zip_mut_with(view!(b), |i, v| *i = *v != 0),
+            (NDArrayView::Bool(a), NDArrayView::Float(b)) => view_mut!(a).zip_mut_with(view!(b), |i, v| *i = *v != 0.0),
+            (NDArrayView::Bool(a), NDArrayView::Bool(b)) => view_mut!(a).zip_mut_with(view!(b), |i, v| *i = *v),
+        }
+    }
+
+    pub fn assign_scalar_i64(&self, other: i64) {
+        match self {
+            NDArrayView::Int(a) => view_mut!(a).iter_mut().for_each(|i| *i = other),
+            NDArrayView::Float(a) => view_mut!(a).iter_mut().for_each(|i| *i = other as f64),
+            NDArrayView::Bool(a) => view_mut!(a).iter_mut().for_each(|i| *i = other != 0),
+        }
+    }
+
+    pub fn assign_scalar_f64(&self, other: f64) {
+        match self {
+            NDArrayView::Int(a) => view_mut!(a).iter_mut().for_each(|i| *i = other as i64),
+            NDArrayView::Float(a) => view_mut!(a).iter_mut().for_each(|i| *i = other),
+            NDArrayView::Bool(a) => view_mut!(a).iter_mut().for_each(|i| *i = other != 0.0),
+        }
+    }
+
     pub fn sum(&self, other: &NDArrayView) -> NDArrayOwned {
         broadcast_op!(self, other, a, b, +, ^)
     }

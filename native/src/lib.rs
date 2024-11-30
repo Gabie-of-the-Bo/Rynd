@@ -98,6 +98,13 @@ binop_rynd_ffi!(leq_arrays, leq);
 binop_rynd_ffi!(geq_arrays, geq);
 binop_rynd_ffi!(index_arrays, index);
 
+ryna_ffi_function!(assign_arrays(args, _out) {
+    let a = ptr_to_ref(args[0].as_ptr());
+    let b = ptr_to_ref(args[1].as_ptr());
+
+    a.assign(b);
+});   
+
 macro_rules! binop_rynd_scalar_ffi {
     ($function: ident, $name_int: ident, $name_float: ident) => {
         ryna_ffi_function!($function(args, out) {
@@ -128,6 +135,18 @@ binop_rynd_scalar_ffi!(lt_array_scalar, lt_scalar_i64, lt_scalar_f64);
 binop_rynd_scalar_ffi!(gt_array_scalar, gt_scalar_i64, gt_scalar_f64);
 binop_rynd_scalar_ffi!(leq_array_scalar, leq_scalar_i64, leq_scalar_f64);
 binop_rynd_scalar_ffi!(geq_array_scalar, geq_scalar_i64, geq_scalar_f64);
+
+ryna_ffi_function!(assign_array_scalar(args, _out) {
+    use rynaffi::FFIValue;
+
+    let a = ptr_to_ref(args[0].as_ptr());
+    
+    match args[1] {
+        FFIValue::Int(v) => a.assign_scalar_i64(v),
+        FFIValue::Float(v) => a.assign_scalar_f64(v),
+        _ => unreachable!()
+    };
+});        
 
 // Common array operations
 ryna_ffi_function!(iota(args, out) {
