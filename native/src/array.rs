@@ -220,6 +220,13 @@ impl NDArray {
             NDArray::View(a) => a.axis_sum(axis).into(),
         }
     }
+
+    pub fn axis_sort(&mut self, axis: usize) {
+        match self {
+            NDArray::Owned(a) => a.view().axis_sort(axis).into(),
+            NDArray::View(a) => a.axis_sort(axis).into(),
+        }
+    }
 }
 
 impl Display for NDArray {

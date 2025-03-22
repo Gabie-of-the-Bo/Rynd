@@ -12,6 +12,7 @@ mod view;
 mod array;
 mod error;
 mod memory;
+mod algorithms;
 
 // Memory management
 ryna_ffi_function!(malloc(args, out) {
@@ -258,6 +259,21 @@ ryna_ffi_function!(axis_sum_array(args, out) {
     let array = Box::new(arr.axis_sum(if use_dim { Some(dim as usize) } else { None }));
 
     unsafe { *out = register_and_leak(array).into(); }
+});
+
+ryna_ffi_function!(axis_sort_array(args, _out) {
+    let arr = ptr_to_ref(args[0].as_ptr());
+    let mut dim = args[1].as_i64();
+    
+    if dim.abs() >= arr.shape().len() as i64 {
+        rynd_error!("Dimension {} is invalid ({} >= {})", dim, dim.abs(), arr.shape().len())
+    }
+
+    if dim < 0 {
+        dim += arr.shape().len() as i64;
+    }
+
+    arr.axis_sort(dim as usize);
 });
 
 // Utility
