@@ -1,6 +1,7 @@
 use std::{io::Write, os::raw::c_void};
 
 use array::NDArray;
+use error::{rynd_dims_check, rynd_slice_check};
 use memory::{free_array_ptr, ptr_to_ref, register_and_leak, register_view};
 use ndarray::{Array1, Slice};
 use owned::{NDArrayOwned, NDArrayType};
@@ -216,12 +217,19 @@ ryna_ffi_function!(slice_array(args, out) {
     let arr_ptr = args[0].as_ptr();
     let arr = ptr_to_ref(arr_ptr);
     let num_dims = args[1].as_i64() as usize;
+
+    rynd_dims_check(arr, Some(num_dims), None);
+
     let slices = args[2..2 + num_dims * 3].into_iter()
         .map(|i| i.as_i64() as isize)
         .collect::<Vec<_>>()
         .chunks_exact(3)
-        .map(|s| Slice::new(s[0], if s[1] == -1 { None } else { Some(s[1] + 1) }, s[2]))
+        .map(|s| Slice::new(s[0], if s[1] == -1 { None } else { Some(s[1]) }, s[2]))
         .collect::<Vec<_>>();
+
+    for (dim_idx, slice) in slices.iter().enumerate() {
+        rynd_slice_check(arr, slice, dim_idx);
+    }
 
     let res = Box::new(arr.slice(slices));
     let view_ptr = register_and_leak(res);
