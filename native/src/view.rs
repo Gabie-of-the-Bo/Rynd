@@ -408,6 +408,23 @@ impl NDArrayView {
             slices.get(ax.axis.index()).cloned().unwrap_or_else(|| Slice::new(0, None, 1))
         }).raw_view_mut().into())
     }
+
+    pub fn axis_sum(&self, axis: Option<usize>) -> NDArrayOwned {
+        if let Some(ax) = axis {
+            match self {
+                NDArrayView::Int(a) => view!(a).sum_axis(Axis(ax)).into(),
+                NDArrayView::Float(a) => view!(a).sum_axis(Axis(ax)).into(),
+                NDArrayView::Bool(a) => view!(a).mapv(|i| i as i64).sum_axis(Axis(ax)).into(),
+            }    
+
+        } else {
+            match self {
+                NDArrayView::Int(a) => Array1::from_elem((1,), view!(a).sum()).into_dyn().into(),
+                NDArrayView::Float(a) => Array1::from_elem((1,), view!(a).sum()).into_dyn().into(),
+                NDArrayView::Bool(a) => Array1::from_elem((1,), view!(a).mapv(|i| i as i64).sum()).into_dyn().into(),
+            } 
+        }
+    }
 }
 
 impl std::fmt::Display for NDArrayView {

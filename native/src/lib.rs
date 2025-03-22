@@ -239,6 +239,27 @@ ryna_ffi_function!(slice_array(args, out) {
     unsafe { *out = view_ptr.into(); }
 });
 
+// Axis functions
+ryna_ffi_function!(axis_sum_array(args, out) {
+    let arr = ptr_to_ref(args[0].as_ptr());
+    let use_dim = args[1].as_bool();
+    let mut dim = args[2].as_i64();
+    
+    if use_dim {
+        if dim.abs() >= arr.shape().len() as i64 {
+            rynd_error!("Dimension {} is invalid ({} >= {})", dim, dim.abs(), arr.shape().len())
+        }
+    
+        if dim < 0 {
+            dim += arr.shape().len() as i64;
+        }
+    }
+
+    let array = Box::new(arr.axis_sum(if use_dim { Some(dim as usize) } else { None }));
+
+    unsafe { *out = register_and_leak(array).into(); }
+});
+
 // Utility
 ryna_ffi_function!(cast_array(args, out) {
     let arr = ptr_to_ref(args[0].as_ptr());

@@ -213,6 +213,13 @@ impl NDArray {
 
     view_binop_scalar!(geq_scalar_i64, i64);
     view_binop_scalar!(geq_scalar_f64, f64);
+
+    pub fn axis_sum(&mut self, axis: Option<usize>) -> NDArray {
+        match self {
+            NDArray::Owned(a) => a.view().axis_sum(axis).into(),
+            NDArray::View(a) => a.axis_sum(axis).into(),
+        }
+    }
 }
 
 impl Display for NDArray {
