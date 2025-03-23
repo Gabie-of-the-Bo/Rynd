@@ -21,13 +21,14 @@ macro_rules! rynd_error {
 
 pub fn rynd_normalize_dim(arr: &NDArray, dim: &mut i64) {
     let shape = arr.shape();
-
-    if dim.abs() >= shape.len() as i64 {
-        rynd_error!("Dimension {} is invalid ({} >= {})", dim, dim.abs(), shape.len())
-    }
+    let orig = *dim;
 
     if *dim < 0 {
         *dim += shape.len() as i64;
+    }
+
+    if *dim < 0 || *dim as usize >= shape.len() {
+        rynd_error!("Dimension {} is invalid (shape is {:?})", orig, shape);
     }
 }
 

@@ -240,6 +240,26 @@ ryna_ffi_function!(slice_array(args, out) {
     unsafe { *out = view_ptr.into(); }
 });
 
+ryna_ffi_function!(rand_array(args, out) {
+    let num_dims = args[0].as_i64() as usize;
+    let shape = args[1..1 + num_dims].into_iter().map(|i| i.as_i64() as usize).collect::<Vec<_>>();
+
+    let array = Box::new(NDArrayOwned::rand(shape).into());
+
+    unsafe { *out = register_and_leak(array).into(); }
+});
+
+ryna_ffi_function!(normal_array(args, out) {
+    let mean = args[0].as_f64();
+    let std = args[1].as_f64();
+    let num_dims = args[2].as_i64() as usize;
+    let shape = args[3..3 + num_dims].into_iter().map(|i| i.as_i64() as usize).collect::<Vec<_>>();
+
+    let array = Box::new(NDArrayOwned::normal(mean, std, shape).into());
+
+    unsafe { *out = register_and_leak(array).into(); }
+});
+
 // Axis functions
 ryna_ffi_function!(axis_sum_array(args, out) {
     let arr = ptr_to_ref(args[0].as_ptr());

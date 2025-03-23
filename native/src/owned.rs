@@ -1,4 +1,6 @@
 use ndarray::{Array1, ArrayD};
+use rand::Rng;
+use rand_distr::{Distribution, Normal};
 
 use crate::view::NDArrayView;
 
@@ -74,6 +76,25 @@ impl NDArrayOwned {
 
     pub fn iota(l: i64) -> Self {
         NDArrayOwned::from(Array1::<i64>::from_iter(0..l).into_dyn())
+    }
+
+    pub fn rand(shape: Vec<usize>) -> Self {
+        let mut rng = rand::rng();
+        let mut result = ArrayD::<f64>::zeros(shape);
+
+        result.mapv_inplace(|_| rng.random());
+
+        result.into()
+    }
+
+    pub fn normal(mean: f64, std: f64, shape: Vec<usize>) -> Self {
+        let mut rng = rand::rng();
+        let normal = Normal::new(mean, std).unwrap();
+        let mut result = ArrayD::<f64>::zeros(shape);
+
+        result.mapv_inplace(|_| normal.sample(&mut rng));
+
+        result.into()
     }
 
     pub fn linspace(f: i64, t: i64, s: usize) -> Self {

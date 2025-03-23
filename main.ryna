@@ -49,6 +49,8 @@ let RYND_GEQ_SCALAR = RYND_LIB.demut().get_function("geq_array_scalar");
 
 let RYND_IOTA = RYND_LIB.demut().get_function("iota");
 let RYND_LINSPACE = RYND_LIB.demut().get_function("linspace");
+let RYND_RAND = RYND_LIB.demut().get_function("rand_array");
+let RYND_NORMAL = RYND_LIB.demut().get_function("normal_array");
 let RYND_RESHAPE = RYND_LIB.demut().get_function("reshape_array");
 let RYND_SLICE = RYND_LIB.demut().get_function("slice_array");
 
@@ -160,6 +162,30 @@ fn linspace(f: Int, t: Int) -> NDArray {
 
 fn linspace(f: Int, t: Int, s: Int) -> NDArray {
     return NDArray(RYND_LINSPACE.demut().call(*f, *t, *s).as<Pointer>());
+}
+
+fn rand(d0: Int) -> NDArray {
+    return NDArray(RYND_RAND.demut().call(1, *d0).as<Pointer>());
+}
+
+fn rand(d0: Int, d1: Int) -> NDArray {
+    return NDArray(RYND_RAND.demut().call(2, *d0, *d1).as<Pointer>());
+}
+
+fn rand(d0: Int, d1: Int, d2: Int) -> NDArray {
+    return NDArray(RYND_RAND.demut().call(3, *d0, *d1, *d2).as<Pointer>());
+}
+
+fn normal(mean: Float, std_dev: Float, d0: Int) -> NDArray {
+    return NDArray(RYND_NORMAL.demut().call(*mean, *std_dev, 1, *d0).as<Pointer>());
+}
+
+fn normal(mean: Float, std_dev: Float, d0: Int, d1: Int) -> NDArray {
+    return NDArray(RYND_NORMAL.demut().call(*mean, *std_dev, 2, *d0, *d1).as<Pointer>());
+}
+
+fn normal(mean: Float, std_dev: Float, d0: Int, d1: Int, d2: Int) -> NDArray {
+    return NDArray(RYND_NORMAL.demut().call(*mean, *std_dev, 3, *d0, *d1, *d2).as<Pointer>());
 }
 
 fn<T> reshape(arr: 'T [NDArrayBase], d0: Int) -> NDArray {
