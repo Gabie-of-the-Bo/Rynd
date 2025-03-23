@@ -19,6 +19,18 @@ macro_rules! rynd_error {
     };
 }
 
+pub fn rynd_normalize_dim(arr: &NDArray, dim: &mut i64) {
+    let shape = arr.shape();
+
+    if dim.abs() >= shape.len() as i64 {
+        rynd_error!("Dimension {} is invalid ({} >= {})", dim, dim.abs(), shape.len())
+    }
+
+    if *dim < 0 {
+        *dim += shape.len() as i64;
+    }
+}
+
 pub fn rynd_dims_check(arr: &NDArray, min_dims: Option<usize>, max_dims: Option<usize>) {
     let shape = arr.shape();
 

@@ -1,7 +1,7 @@
 use std::{io::Write, os::raw::c_void};
 
 use array::NDArray;
-use error::{rynd_dims_check, rynd_slice_check};
+use error::{rynd_dims_check, rynd_normalize_dim, rynd_slice_check};
 use memory::{free_array_ptr, ptr_to_ref, register_and_leak, register_view};
 use ndarray::{Array1, Slice};
 use owned::{NDArrayOwned, NDArrayType};
@@ -243,20 +243,44 @@ ryna_ffi_function!(slice_array(args, out) {
 // Axis functions
 ryna_ffi_function!(axis_sum_array(args, out) {
     let arr = ptr_to_ref(args[0].as_ptr());
-    let use_dim = args[1].as_bool();
-    let mut dim = args[2].as_i64();
+    let mut dim = args[1].as_i64();
     
-    if use_dim {
-        if dim.abs() >= arr.shape().len() as i64 {
-            rynd_error!("Dimension {} is invalid ({} >= {})", dim, dim.abs(), arr.shape().len())
-        }
-    
-        if dim < 0 {
-            dim += arr.shape().len() as i64;
-        }
-    }
+    rynd_normalize_dim(arr, &mut dim);
 
-    let array = Box::new(arr.axis_sum(if use_dim { Some(dim as usize) } else { None }));
+    let array = Box::new(arr.axis_sum(dim as usize));
+
+    unsafe { *out = register_and_leak(array).into(); }
+});
+
+ryna_ffi_function!(axis_mean_array(args, out) {
+    let arr = ptr_to_ref(args[0].as_ptr());
+    let mut dim = args[1].as_i64();
+    
+    rynd_normalize_dim(arr, &mut dim);
+
+    let array = Box::new(arr.axis_mean(dim as usize));
+
+    unsafe { *out = register_and_leak(array).into(); }
+});
+
+ryna_ffi_function!(axis_var_array(args, out) {
+    let arr = ptr_to_ref(args[0].as_ptr());
+    let mut dim = args[1].as_i64();
+    
+    rynd_normalize_dim(arr, &mut dim);
+
+    let array = Box::new(arr.axis_var(dim as usize));
+
+    unsafe { *out = register_and_leak(array).into(); }
+});
+
+ryna_ffi_function!(axis_std_array(args, out) {
+    let arr = ptr_to_ref(args[0].as_ptr());
+    let mut dim = args[1].as_i64();
+    
+    rynd_normalize_dim(arr, &mut dim);
+
+    let array = Box::new(arr.axis_std(dim as usize));
 
     unsafe { *out = register_and_leak(array).into(); }
 });
@@ -265,13 +289,7 @@ ryna_ffi_function!(axis_sort_array(args, _out) {
     let arr = ptr_to_ref(args[0].as_ptr());
     let mut dim = args[1].as_i64();
     
-    if dim.abs() >= arr.shape().len() as i64 {
-        rynd_error!("Dimension {} is invalid ({} >= {})", dim, dim.abs(), arr.shape().len())
-    }
-
-    if dim < 0 {
-        dim += arr.shape().len() as i64;
-    }
+    rynd_normalize_dim(arr, &mut dim);
 
     arr.axis_sort(dim as usize);
 });

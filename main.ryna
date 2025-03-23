@@ -53,6 +53,9 @@ let RYND_RESHAPE = RYND_LIB.demut().get_function("reshape_array");
 let RYND_SLICE = RYND_LIB.demut().get_function("slice_array");
 
 let RYND_AX_SUM = RYND_LIB.demut().get_function("axis_sum_array");
+let RYND_AX_MEAN = RYND_LIB.demut().get_function("axis_mean_array");
+let RYND_AX_VAR = RYND_LIB.demut().get_function("axis_var_array");
+let RYND_AX_STD = RYND_LIB.demut().get_function("axis_std_array");
 let RYND_AX_SORT = RYND_LIB.demut().get_function("axis_sort_array");
 
 let RYND_PRINT = RYND_LIB.demut().get_function("print_array");
@@ -416,11 +419,35 @@ op<L> (a: 'L [NDArrayBase])[s0: Slice, s1: Slice, s2: Slice, s3: Slice, s4: Slic
 
 // Axis functions
 fn<T> sum(arr: 'T [NDArrayBase]) -> NDArray {
-    return NDArray(RYND_AX_SUM.demut().call(arr.ptr(), false, 0).as<Pointer>());
+    return NDArray(RYND_AX_SUM.demut().call(arr.ptr(), -1).as<Pointer>());
 }
 
 fn<T> sum(arr: 'T [NDArrayBase], dim: Int) -> NDArray {
-    return NDArray(RYND_AX_SUM.demut().call(arr.ptr(), true, *dim).as<Pointer>());
+    return NDArray(RYND_AX_SUM.demut().call(arr.ptr(), *dim).as<Pointer>());
+}
+
+fn<T> mean(arr: 'T [NDArrayBase]) -> NDArray {
+    return NDArray(RYND_AX_MEAN.demut().call(arr.ptr(), -1).as<Pointer>());
+}
+
+fn<T> mean(arr: 'T [NDArrayBase], dim: Int) -> NDArray {
+    return NDArray(RYND_AX_MEAN.demut().call(arr.ptr(), *dim).as<Pointer>());
+}
+
+fn<T> var(arr: 'T [NDArrayBase]) -> NDArray {
+    return NDArray(RYND_AX_VAR.demut().call(arr.ptr(), -1).as<Pointer>());
+}
+
+fn<T> var(arr: 'T [NDArrayBase], dim: Int) -> NDArray {
+    return NDArray(RYND_AX_VAR.demut().call(arr.ptr(), *dim).as<Pointer>());
+}
+
+fn<T> std(arr: 'T [NDArrayBase]) -> NDArray {
+    return NDArray(RYND_AX_STD.demut().call(arr.ptr(), -1).as<Pointer>());
+}
+
+fn<T> std(arr: 'T [NDArrayBase], dim: Int) -> NDArray {
+    return NDArray(RYND_AX_STD.demut().call(arr.ptr(), *dim).as<Pointer>());
 }
 
 fn<T> sort(arr: 'T [NDArrayBase]) {

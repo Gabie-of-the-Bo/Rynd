@@ -409,21 +409,12 @@ impl NDArrayView {
         }).raw_view_mut().into())
     }
 
-    pub fn axis_sum(&self, axis: Option<usize>) -> NDArrayOwned {
-        if let Some(ax) = axis {
-            match self {
-                NDArrayView::Int(a) => view!(a).sum_axis(Axis(ax)).into(),
-                NDArrayView::Float(a) => view!(a).sum_axis(Axis(ax)).into(),
-                NDArrayView::Bool(a) => view!(a).mapv(|i| i as i64).sum_axis(Axis(ax)).into(),
-            }    
-
-        } else {
-            match self {
-                NDArrayView::Int(a) => Array1::from_elem((1,), view!(a).sum()).into_dyn().into(),
-                NDArrayView::Float(a) => Array1::from_elem((1,), view!(a).sum()).into_dyn().into(),
-                NDArrayView::Bool(a) => Array1::from_elem((1,), view!(a).mapv(|i| i as i64).sum()).into_dyn().into(),
-            } 
-        }
+    pub fn axis_sum(&self, axis: usize) -> NDArrayOwned {
+        match self {
+            NDArrayView::Int(a) => view!(a).sum_axis(Axis(axis)).into(),
+            NDArrayView::Float(a) => view!(a).sum_axis(Axis(axis)).into(),
+            NDArrayView::Bool(a) => view!(a).mapv(|i| i as i64).sum_axis(Axis(axis)).into(),
+        }    
     }
 
     pub fn axis_sort(&self, axis: usize) {
@@ -431,6 +422,30 @@ impl NDArrayView {
             NDArrayView::Int(a) => sort_view_axis(view_mut!(a), Axis(axis)),
             NDArrayView::Float(a) => sort_view_axis(view_mut!(a), Axis(axis)),
             NDArrayView::Bool(a) => sort_view_axis(view_mut!(a), Axis(axis))
+        }
+    }
+
+    pub fn axis_mean(&self, axis: usize) -> NDArrayOwned {
+        match self {
+            NDArrayView::Int(a) => view!(a).mean_axis(Axis(axis)).unwrap().into(),
+            NDArrayView::Float(a) => view!(a).mean_axis(Axis(axis)).unwrap().into(),
+            NDArrayView::Bool(a) => view!(a).mapv(|i| i as i64).mean_axis(Axis(axis)).unwrap().into(),
+        }
+    }
+
+    pub fn axis_var(&self, axis: usize) -> NDArrayOwned {
+        match self {
+            NDArrayView::Int(a) => view!(a).mapv(|i| i as f64).var_axis(Axis(axis), 0.0).into(),
+            NDArrayView::Float(a) => view!(a).var_axis(Axis(axis), 0.0).into(),
+            NDArrayView::Bool(a) => view!(a).mapv(|i| i as i64 as f64).var_axis(Axis(axis), 0.0).into(),
+        }
+    }
+
+    pub fn axis_std(&self, axis: usize) -> NDArrayOwned {
+        match self {
+            NDArrayView::Int(a) => view!(a).mapv(|i| i as f64).std_axis(Axis(axis), 0.0).into(),
+            NDArrayView::Float(a) => view!(a).std_axis(Axis(axis), 0.0).into(),
+            NDArrayView::Bool(a) => view!(a).mapv(|i| i as i64 as f64).std_axis(Axis(axis), 0.0).into(),
         }
     }
 }
