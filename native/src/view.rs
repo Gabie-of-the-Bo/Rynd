@@ -1,6 +1,6 @@
 use ndarray::{Array1, ArrayBase, ArrayViewD, Axis, Dim, IxDynImpl, OwnedRepr, RawArrayViewMut, Slice, Zip};
 
-use crate::{algorithms::{argsort_axis, sort_view_axis}, owned::NDArrayOwned, rynd_error};
+use crate::{algorithms::{argsort_axis, concat_axis, sort_view_axis, stack_axis}, owned::NDArrayOwned, rynd_error};
 
 type DynRawArrayView<T> = RawArrayViewMut<T, Dim<IxDynImpl>>;
 #[derive(Clone)]
@@ -454,6 +454,24 @@ impl NDArrayView {
             NDArrayView::Int(a) => view!(a).mapv(|i| i as f64).std_axis(Axis(axis), 0.0).into(),
             NDArrayView::Float(a) => view!(a).std_axis(Axis(axis), 0.0).into(),
             NDArrayView::Bool(a) => view!(a).mapv(|i| i as i64 as f64).std_axis(Axis(axis), 0.0).into(),
+        }
+    }
+
+    pub fn stack(&self, other: &NDArrayView, axis: usize) -> NDArrayOwned {
+        match (self, other) {
+            (NDArrayView::Int(a), NDArrayView::Int(b)) => stack_axis(view!(a), view!(b), Axis(axis)).into(),
+            (NDArrayView::Float(a), NDArrayView::Float(b)) => stack_axis(view!(a), view!(b), Axis(axis)).into(),
+            (NDArrayView::Bool(a), NDArrayView::Bool(b)) => stack_axis(view!(a), view!(b), Axis(axis)).into(),
+            _ => rynd_error!("Unable to stack: incompatible array types")
+        }
+    }
+
+    pub fn concat(&self, other: &NDArrayView, axis: usize) -> NDArrayOwned {
+        match (self, other) {
+            (NDArrayView::Int(a), NDArrayView::Int(b)) => concat_axis(view!(a), view!(b), Axis(axis)).into(),
+            (NDArrayView::Float(a), NDArrayView::Float(b)) => concat_axis(view!(a), view!(b), Axis(axis)).into(),
+            (NDArrayView::Bool(a), NDArrayView::Bool(b)) => concat_axis(view!(a), view!(b), Axis(axis)).into(),
+            _ => rynd_error!("Unable to concat: incompatible array types")
         }
     }
 }

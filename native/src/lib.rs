@@ -260,6 +260,41 @@ ryna_ffi_function!(normal_array(args, out) {
     unsafe { *out = register_and_leak(array).into(); }
 });
 
+ryna_ffi_function!(stack_arrays(args, out) {
+    let a_ptr = args[0].as_ptr();
+    let b_ptr = args[1].as_ptr();
+    let dim = args[2].as_i64();
+    let a = ptr_to_ref(a_ptr);
+    let b = ptr_to_ref(b_ptr);
+
+    if dim < 0 {
+        rynd_error!("Negative dimensions are not allowed in stack function ({} given)", dim);
+    }
+
+    if dim as usize > a.shape().len() || dim as usize > b.shape().len() {
+        rynd_error!("Dimension {} out of range for stack function", dim);
+    }
+
+    let array = Box::new(a.stack(b, dim as usize));
+
+    unsafe { *out = register_and_leak(array).into(); }
+});
+
+ryna_ffi_function!(concat_arrays(args, out) {
+    let a_ptr = args[0].as_ptr();
+    let b_ptr = args[1].as_ptr();
+    let mut dim = args[2].as_i64();
+    let a = ptr_to_ref(a_ptr);
+    let b = ptr_to_ref(b_ptr);
+
+    rynd_normalize_dim(a, &mut dim);
+    rynd_normalize_dim(b, &mut dim);
+
+    let array = Box::new(a.concat(b, dim as usize));
+
+    unsafe { *out = register_and_leak(array).into(); }
+});
+
 // Axis functions
 ryna_ffi_function!(axis_sum_array(args, out) {
     let arr = ptr_to_ref(args[0].as_ptr());

@@ -1,4 +1,6 @@
-use ndarray::{Array, ArrayView, ArrayViewMut, Axis, Dimension};
+use ndarray::{Array, ArrayView, ArrayViewMut, Axis, Dimension, RemoveAxis};
+
+use crate::rynd_error;
 
 pub fn sort_view_axis<T, D>(mut view: ArrayViewMut<T, D>, axis: Axis)
 where
@@ -36,4 +38,26 @@ where
         }
     }
     result
+}
+
+pub fn stack_axis<'a, T, D>(a: &ArrayView<'a, T, D>, b: &ArrayView<'a, T, D>, axis: Axis) -> Array<T, D::Larger>
+where
+    T: PartialOrd + Clone,
+    D: Dimension,
+{
+    match ndarray::stack(axis, &[a.clone(), b.clone()]) {
+        Ok(r) => r,
+        Err(_) => rynd_error!("Unable to stack arrays of shape {:?} and {:?} over axis {}", a.shape(), b.shape(), axis.0),
+    }
+}
+
+pub fn concat_axis<'a, T, D>(a: &ArrayView<'a, T, D>, b: &ArrayView<'a, T, D>, axis: Axis) -> Array<T, D>
+where
+    T: PartialOrd + Clone,
+    D: Dimension + RemoveAxis,
+{
+    match ndarray::concatenate(axis, &[a.clone(), b.clone()]) {
+        Ok(r) => r,
+        Err(_) => rynd_error!("Unable to concatenate arrays of shape {:?} and {:?} over axis {}", a.shape(), b.shape(), axis.0),
+    }
 }

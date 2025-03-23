@@ -255,6 +255,24 @@ impl NDArray {
             NDArray::View(a) => a.axis_argsort(axis).into(),
         }
     }
+
+    pub fn stack(&mut self, other: &mut NDArray, axis: usize) -> NDArray {
+        match (self, other) {
+            (NDArray::Owned(a), NDArray::Owned(b)) => a.view().stack(&b.view(), axis).into(),
+            (NDArray::Owned(a), NDArray::View(b)) => a.view().stack(b, axis).into(),
+            (NDArray::View(a), NDArray::Owned(b)) => a.stack(&b.view(), axis).into(),
+            (NDArray::View(a), NDArray::View(b)) => a.stack(b, axis).into(),
+        }
+    }
+
+    pub fn concat(&mut self, other: &mut NDArray, axis: usize) -> NDArray {
+        match (self, other) {
+            (NDArray::Owned(a), NDArray::Owned(b)) => a.view().concat(&b.view(), axis).into(),
+            (NDArray::Owned(a), NDArray::View(b)) => a.view().concat(b, axis).into(),
+            (NDArray::View(a), NDArray::Owned(b)) => a.concat(&b.view(), axis).into(),
+            (NDArray::View(a), NDArray::View(b)) => a.concat(b, axis).into(),
+        }
+    }
 }
 
 impl Display for NDArray {
