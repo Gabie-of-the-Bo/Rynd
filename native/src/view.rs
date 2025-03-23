@@ -1,6 +1,6 @@
 use ndarray::{Array1, ArrayBase, ArrayViewD, Axis, Dim, IxDynImpl, OwnedRepr, RawArrayViewMut, Slice, Zip};
 
-use crate::{algorithms::sort_view_axis, owned::NDArrayOwned, rynd_error};
+use crate::{algorithms::{argsort_axis, sort_view_axis}, owned::NDArrayOwned, rynd_error};
 
 type DynRawArrayView<T> = RawArrayViewMut<T, Dim<IxDynImpl>>;
 #[derive(Clone)]
@@ -422,6 +422,14 @@ impl NDArrayView {
             NDArrayView::Int(a) => sort_view_axis(view_mut!(a), Axis(axis)),
             NDArrayView::Float(a) => sort_view_axis(view_mut!(a), Axis(axis)),
             NDArrayView::Bool(a) => sort_view_axis(view_mut!(a), Axis(axis))
+        }
+    }
+
+    pub fn axis_argsort(&self, axis: usize) -> NDArrayOwned {
+        match self {
+            NDArrayView::Int(a) => argsort_axis(view!(a), Axis(axis)).into(),
+            NDArrayView::Float(a) => argsort_axis(view!(a), Axis(axis)).into(),
+            NDArrayView::Bool(a) => argsort_axis(&view!(a).mapv(|i| i as i64).view(), Axis(axis)).into(),
         }
     }
 

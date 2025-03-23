@@ -294,6 +294,17 @@ ryna_ffi_function!(axis_sort_array(args, _out) {
     arr.axis_sort(dim as usize);
 });
 
+ryna_ffi_function!(axis_argsort_array(args, out) {
+    let arr = ptr_to_ref(args[0].as_ptr());
+    let mut dim = args[1].as_i64();
+    
+    rynd_normalize_dim(arr, &mut dim);
+
+    let array = Box::new(arr.axis_argsort(dim as usize));
+
+    unsafe { *out = register_and_leak(array).into(); }
+});
+
 // Utility
 ryna_ffi_function!(cast_array(args, out) {
     let arr = ptr_to_ref(args[0].as_ptr());

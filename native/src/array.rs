@@ -248,6 +248,13 @@ impl NDArray {
             NDArray::View(a) => a.axis_sort(axis).into(),
         }
     }
+
+    pub fn axis_argsort(&mut self, axis: usize) -> NDArray {
+        match self {
+            NDArray::Owned(a) => a.view().axis_argsort(axis).into(),
+            NDArray::View(a) => a.axis_argsort(axis).into(),
+        }
+    }
 }
 
 impl Display for NDArray {

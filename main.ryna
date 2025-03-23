@@ -56,6 +56,7 @@ let RYND_AX_SUM = RYND_LIB.demut().get_function("axis_sum_array");
 let RYND_AX_MEAN = RYND_LIB.demut().get_function("axis_mean_array");
 let RYND_AX_VAR = RYND_LIB.demut().get_function("axis_var_array");
 let RYND_AX_STD = RYND_LIB.demut().get_function("axis_std_array");
+let RYND_AX_ARGSORT = RYND_LIB.demut().get_function("axis_argsort_array");
 let RYND_AX_SORT = RYND_LIB.demut().get_function("axis_sort_array");
 
 let RYND_PRINT = RYND_LIB.demut().get_function("print_array");
@@ -448,6 +449,14 @@ fn<T> std(arr: 'T [NDArrayBase]) -> NDArray {
 
 fn<T> std(arr: 'T [NDArrayBase], dim: Int) -> NDArray {
     return NDArray(RYND_AX_STD.demut().call(arr.ptr(), *dim).as<Pointer>());
+}
+
+fn<T> argsort(arr: 'T [NDArrayBase]) -> NDArray {
+    return NDArray(RYND_AX_ARGSORT.demut().call(arr.ptr(), -1).as<Pointer>());
+}
+
+fn<T> argsort(arr: 'T [NDArrayBase], dim: Int) -> NDArray {
+    return NDArray(RYND_AX_ARGSORT.demut().call(arr.ptr(), *dim).as<Pointer>());
 }
 
 fn<T> sort(arr: 'T [NDArrayBase]) {
