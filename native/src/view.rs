@@ -1,4 +1,4 @@
-use ndarray::{Array1, ArrayBase, ArrayViewD, Axis, Dim, IxDynImpl, OwnedRepr, RawArrayViewMut, Slice, Zip};
+use ndarray::{Array1, ArrayBase, ArrayViewD, Axis, Dim, Ix2, IxDynImpl, OwnedRepr, RawArrayViewMut, Slice, Zip};
 
 use crate::{algorithms::{argsort_axis, concat_axis, sort_view_axis, stack_axis}, owned::NDArrayOwned, rynd_error};
 
@@ -407,6 +407,80 @@ impl NDArrayView {
         match_op!(self, a, view_mut!(a).slice_each_axis_mut(|ax| {
             slices.get(ax.axis.index()).cloned().unwrap_or_else(|| Slice::new(0, None, 1))
         }).raw_view_mut().into())
+    }
+
+    pub fn matmul(&self, other: &NDArrayView) -> NDArrayOwned {
+        match self {
+            NDArrayView::Int(a) => {
+                let a_d2 = a.clone().into_dimensionality::<Ix2>().ok().unwrap();
+
+                match other {
+                    NDArrayView::Int(b) => {
+                        let b_d2 = b.clone().into_dimensionality::<Ix2>().ok().unwrap();
+                        view!(a_d2).dot(view!(b_d2)).into_dyn().into()
+                    },
+
+                    NDArrayView::Float(b) => {
+                        let b_d2 = b.clone().into_dimensionality::<Ix2>().ok().unwrap();
+                        let a_float = view!(a_d2).mapv(|i| i as f64);
+                        a_float.dot(view!(b_d2)).into_dyn().into()
+                    },
+
+                    NDArrayView::Bool(b) => {
+                        let b_d2 = b.clone().into_dimensionality::<Ix2>().ok().unwrap();
+                        let b_int = view!(b_d2).mapv(|i| i as i64);
+                        view!(a_d2).dot(&b_int).into_dyn().into()
+                    },
+                }
+            },
+
+            NDArrayView::Float(a) => {
+                let a_d2 = a.clone().into_dimensionality::<Ix2>().ok().unwrap();
+
+                match other {
+                    NDArrayView::Int(b) => {
+                        let b_d2 = b.clone().into_dimensionality::<Ix2>().ok().unwrap();
+                        let b_float = view!(b_d2).mapv(|i| i as f64);
+                        view!(a_d2).dot(&b_float).into_dyn().into()
+                    },
+
+                    NDArrayView::Float(b) => {
+                        let b_d2 = b.clone().into_dimensionality::<Ix2>().ok().unwrap();
+                        view!(a_d2).dot(view!(b_d2)).into_dyn().into()
+                    },
+
+                    NDArrayView::Bool(b) => {
+                        let b_d2 = b.clone().into_dimensionality::<Ix2>().ok().unwrap();
+                        let b_float = view!(b_d2).mapv(|i| i as i64 as f64);
+                        view!(a_d2).dot(&b_float).into_dyn().into()
+                    },
+                }
+            },
+            NDArrayView::Bool(a) => {
+                let a_d2 = a.clone().into_dimensionality::<Ix2>().ok().unwrap();
+
+                match other {
+                    NDArrayView::Int(b) => {
+                        let b_d2 = b.clone().into_dimensionality::<Ix2>().ok().unwrap();
+                        let a_int = view!(a_d2).mapv(|i| i as i64);
+                        a_int.dot(view!(b_d2)).into_dyn().into()
+                    },
+
+                    NDArrayView::Float(b) => {
+                        let b_d2 = b.clone().into_dimensionality::<Ix2>().ok().unwrap();
+                        let a_float = view!(a_d2).mapv(|i| i as i64 as f64);
+                        a_float.dot(view!(b_d2)).into_dyn().into()
+                    },
+
+                    NDArrayView::Bool(b) => {
+                        let b_d2 = b.clone().into_dimensionality::<Ix2>().ok().unwrap();
+                        let a_int = view!(a_d2).mapv(|i| i as i64);
+                        let b_int = view!(b_d2).mapv(|i| i as i64);
+                        a_int.dot(&b_int).into_dyn().into()
+                    },
+                }
+            },
+        }
     }
 
     pub fn axis_sum(&self, axis: usize) -> NDArrayOwned {

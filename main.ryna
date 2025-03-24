@@ -55,6 +55,7 @@ let RYND_RESHAPE = RYND_LIB.demut().get_function("reshape_array");
 let RYND_SLICE = RYND_LIB.demut().get_function("slice_array");
 let RYND_STACK = RYND_LIB.demut().get_function("stack_arrays");
 let RYND_CONCAT = RYND_LIB.demut().get_function("concat_arrays");
+let RYND_MATMUL = RYND_LIB.demut().get_function("matmul");
 
 let RYND_AX_SUM = RYND_LIB.demut().get_function("axis_sum_array");
 let RYND_AX_MEAN = RYND_LIB.demut().get_function("axis_mean_array");
@@ -501,6 +502,11 @@ fn<T, G> stack(a: 'T [NDArrayBase], b: 'G [NDArrayBase], dim: Int) -> NDArray {
 
 fn<T, G> concat(a: 'T [NDArrayBase], b: 'G [NDArrayBase], dim: Int) -> NDArray {
     return NDArray(RYND_CONCAT.demut().call(a.ptr(), b.ptr(), *dim).as<Pointer>());
+}
+
+// Other functions
+fn<T, G> matmul(a: 'T [NDArrayBase], b: 'G [NDArrayBase]) -> NDArray {
+    return NDArray(RYND_MATMUL.demut().call(a.ptr(), b.ptr()).as<Pointer>());
 }
 
 // Formatting

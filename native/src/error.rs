@@ -19,6 +19,23 @@ macro_rules! rynd_error {
     };
 }
 
+pub fn rynd_matmul_check(a: &NDArray, b: &NDArray) {
+    let shape_a = a.shape();
+    let shape_b = b.shape();
+    
+    if shape_a.len() != 2 {
+        rynd_error!("Expected left operand of matrix multiplication to be of dimension 2 (shape is {:?})", shape_a);
+    }
+    
+    if shape_b.len() != 2 {
+        rynd_error!("Expected right operand of matrix multiplication to be of dimension 2 (shape is {:?})", shape_b);
+    }
+
+    if shape_a[1] != shape_b[0] {
+        rynd_error!("Incompatible array shapes for matrix multiplication ({:?} x {:?})", shape_a, shape_b);
+    }
+}
+
 pub fn rynd_normalize_dim(arr: &NDArray, dim: &mut i64) {
     let shape = arr.shape();
     let orig = *dim;

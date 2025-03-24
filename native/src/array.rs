@@ -144,6 +144,15 @@ impl NDArray {
         }
     }
 
+    pub fn matmul(&mut self, other: &mut NDArray) -> NDArray {
+        match (self, other) {
+            (NDArray::Owned(a), NDArray::Owned(b)) => a.view().matmul(&b.view()).into(),
+            (NDArray::Owned(a), NDArray::View(b)) => a.view().matmul(b).into(),
+            (NDArray::View(a), NDArray::Owned(b)) => a.matmul(&b.view()).into(),
+            (NDArray::View(a), NDArray::View(b)) => a.matmul(b).into(),
+        }
+    }
+
     pub fn assign(&mut self, other: &mut NDArray) {
         match self {
             NDArray::Owned(a) => a.view().assign(&other.view()),

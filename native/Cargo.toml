@@ -13,7 +13,7 @@ crate-type = ["cdylib"]
  
 [dependencies]
 ryna-ffi = "0.1.0"
-ndarray = "0.16.1"
+ndarray = { version = "0.16.1", features = ["matrixmultiply-threading"] }
 colored = "2.1.0"
 lazy_static = "1.5.0"
 rustc-hash = "1.1.0"

@@ -1,7 +1,7 @@
 use std::{io::Write, os::raw::c_void};
 
 use array::NDArray;
-use error::{rynd_dims_check, rynd_normalize_dim, rynd_slice_check};
+use error::{rynd_dims_check, rynd_matmul_check, rynd_normalize_dim, rynd_slice_check};
 use memory::{free_array_ptr, ptr_to_ref, register_and_leak, register_view};
 use ndarray::{Array1, Slice};
 use owned::{NDArrayOwned, NDArrayType};
@@ -238,6 +238,19 @@ ryna_ffi_function!(slice_array(args, out) {
     register_view(arr_ptr, view_ptr);
 
     unsafe { *out = view_ptr.into(); }
+});
+
+ryna_ffi_function!(matmul(args, out) {
+    let a_ptr = args[0].as_ptr();
+    let b_ptr = args[1].as_ptr();
+    let a = ptr_to_ref(a_ptr);
+    let b = ptr_to_ref(b_ptr);
+
+    rynd_matmul_check(a, b);
+
+    let array = Box::new(a.matmul(b));
+
+    unsafe { *out = register_and_leak(array).into(); }
 });
 
 ryna_ffi_function!(rand_array(args, out) {
