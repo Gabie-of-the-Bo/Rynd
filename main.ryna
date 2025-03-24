@@ -55,6 +55,7 @@ let RYND_RESHAPE = RYND_LIB.demut().get_function("reshape_array");
 let RYND_SLICE = RYND_LIB.demut().get_function("slice_array");
 let RYND_STACK = RYND_LIB.demut().get_function("stack_arrays");
 let RYND_CONCAT = RYND_LIB.demut().get_function("concat_arrays");
+let RYND_PERMUTE = RYND_LIB.demut().get_function("permute_axes");
 let RYND_MATMUL = RYND_LIB.demut().get_function("matmul");
 
 let RYND_AX_SUM = RYND_LIB.demut().get_function("axis_sum_array");
@@ -505,6 +506,22 @@ fn<T, G> concat(a: 'T [NDArrayBase], b: 'G [NDArrayBase], dim: Int) -> NDArray {
 }
 
 // Other functions
+fn<T> permute(a: 'T [NDArrayBase], d0: Int, d1: Int) -> NDArray {
+    return NDArray(RYND_PERMUTE.demut().call(a.ptr(), 2, *d0, *d1).as<Pointer>());
+}
+
+fn<T> permute(a: 'T [NDArrayBase], d0: Int, d1: Int, d2: Int) -> NDArray {
+    return NDArray(RYND_PERMUTE.demut().call(a.ptr(), 3, *d0, *d1, *d2).as<Pointer>());
+}
+
+fn<T> permute(a: 'T [NDArrayBase], d0: Int, d1: Int, d2: Int, d3: Int) -> NDArray {
+    return NDArray(RYND_PERMUTE.demut().call(a.ptr(), 4, *d0, *d1, *d2, *d3).as<Pointer>());
+}
+
+fn<T> transpose(a: 'T [NDArrayBase]) -> NDArray {
+    return NDArray(RYND_PERMUTE.demut().call(a.ptr(), 2, 1, 0).as<Pointer>());
+}
+
 fn<T, G> matmul(a: 'T [NDArrayBase], b: 'G [NDArrayBase]) -> NDArray {
     return NDArray(RYND_MATMUL.demut().call(a.ptr(), b.ptr()).as<Pointer>());
 }

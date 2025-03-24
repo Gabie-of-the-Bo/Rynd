@@ -409,6 +409,14 @@ impl NDArrayView {
         }).raw_view_mut().into())
     }
 
+    pub fn permute(&self, permutation: &[usize]) -> NDArrayView {
+        match self {
+            NDArrayView::Int(a) => view_mut!(a).permuted_axes(permutation).raw_view_mut().into(),
+            NDArrayView::Float(a) => view_mut!(a).permuted_axes(permutation).raw_view_mut().into(),
+            NDArrayView::Bool(a) => view_mut!(a).permuted_axes(permutation).raw_view_mut().into(),
+        }
+    }
+
     pub fn matmul(&self, other: &NDArrayView) -> NDArrayOwned {
         match self {
             NDArrayView::Int(a) => {

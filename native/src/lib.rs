@@ -1,7 +1,7 @@
 use std::{io::Write, os::raw::c_void};
 
 use array::NDArray;
-use error::{rynd_dims_check, rynd_matmul_check, rynd_normalize_dim, rynd_slice_check};
+use error::{rynd_dims_check, rynd_matmul_check, rynd_normalize_dim, rynd_permute_check, rynd_slice_check};
 use memory::{free_array_ptr, ptr_to_ref, register_and_leak, register_view};
 use ndarray::{Array1, Slice};
 use owned::{NDArrayOwned, NDArrayType};
@@ -233,6 +233,25 @@ ryna_ffi_function!(slice_array(args, out) {
     }
 
     let res = Box::new(arr.slice(slices));
+    let view_ptr = register_and_leak(res);
+
+    register_view(arr_ptr, view_ptr);
+
+    unsafe { *out = view_ptr.into(); }
+});
+
+ryna_ffi_function!(permute_axes(args, out) {
+    let arr_ptr = args[0].as_ptr();
+    let num_dims = args[1].as_i64() as usize;
+    let perm = args[2..2 + num_dims].into_iter()
+                                    .map(|i| i.as_i64() as usize)
+                                    .collect::<Vec<_>>();
+    
+    let a = ptr_to_ref(arr_ptr);
+
+    rynd_permute_check(a, &perm);
+
+    let res = Box::new(a.permute(&perm));
     let view_ptr = register_and_leak(res);
 
     register_view(arr_ptr, view_ptr);

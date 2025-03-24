@@ -19,6 +19,21 @@ macro_rules! rynd_error {
     };
 }
 
+pub fn rynd_permute_check(arr: &NDArray, perm: &[usize]) {
+    let mut cpy = perm.iter().cloned().collect::<Vec<_>>();
+    cpy.sort();
+
+    for (i, v) in cpy.iter().enumerate() {
+        if i != *v {
+            rynd_error!("{:?} is not a valid permutation", perm);
+        }
+    } 
+
+    if perm.len() != arr.shape().len() {
+        rynd_error!("{:?} is not a valid permutation for an array of shape {:?}", perm, arr.shape());
+    }
+}
+
 pub fn rynd_matmul_check(a: &NDArray, b: &NDArray) {
     let shape_a = a.shape();
     let shape_b = b.shape();

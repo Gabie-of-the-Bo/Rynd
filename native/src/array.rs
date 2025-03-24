@@ -144,6 +144,13 @@ impl NDArray {
         }
     }
 
+    pub fn permute(&mut self, permutation: &[usize]) -> NDArray {
+        match self {
+            NDArray::Owned(a) => a.view().permute(permutation).into(),
+            NDArray::View(a) => a.permute(permutation).into(),
+        }
+    }
+
     pub fn matmul(&mut self, other: &mut NDArray) -> NDArray {
         match (self, other) {
             (NDArray::Owned(a), NDArray::Owned(b)) => a.view().matmul(&b.view()).into(),
