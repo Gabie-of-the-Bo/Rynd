@@ -327,6 +327,29 @@ ryna_ffi_function!(concat_arrays(args, out) {
     unsafe { *out = register_and_leak(array).into(); }
 });
 
+// Unary functions
+macro_rules! unary_rynd_fn {
+    ($public_name: ident, $name: ident) => {
+        ryna_ffi_function!($public_name(args, out) {
+            let arr = ptr_to_ref(args[0].as_ptr());
+            
+            let array = Box::new(arr.$name());
+        
+            unsafe { *out = register_and_leak(array).into(); }
+        });        
+    };
+}
+
+unary_rynd_fn!(floor_array, floor);
+unary_rynd_fn!(ceil_array, ceil);
+unary_rynd_fn!(round_array, round);
+unary_rynd_fn!(cos_array, cos);
+unary_rynd_fn!(sin_array, sin);
+unary_rynd_fn!(tan_array, tan);
+unary_rynd_fn!(sqrt_array, sqrt);
+unary_rynd_fn!(log2_array, log2);
+unary_rynd_fn!(log10_array, log10);
+
 // Axis functions
 ryna_ffi_function!(axis_sum_array(args, out) {
     let arr = ptr_to_ref(args[0].as_ptr());

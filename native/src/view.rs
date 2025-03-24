@@ -132,6 +132,18 @@ macro_rules! zip_op {
     };
 }
 
+macro_rules! unary_float_fn {
+    ($name: ident) => {
+        pub fn $name(&self) -> NDArrayOwned {
+            match self {
+                NDArrayView::Int(a) => view!(a).mapv(|i| i as f64).$name().into(),
+                NDArrayView::Float(a) => view!(a).$name().into(),
+                NDArrayView::Bool(a) => view!(a).mapv(|i| i as i64 as f64).$name().into(),
+            }
+        }
+    };
+}
+
 impl NDArrayView {
     pub fn owned(&self) -> NDArrayOwned {
         match_op!(self, v, view!(v).to_owned().into())
@@ -556,6 +568,37 @@ impl NDArrayView {
             _ => rynd_error!("Unable to concat: incompatible array types")
         }
     }
+
+    pub fn floor(&self) -> NDArrayOwned {
+        match self {
+            NDArrayView::Int(a) => view!(a).clone().into_owned().into(),
+            NDArrayView::Float(a) => view!(a).floor().into(),
+            NDArrayView::Bool(a) => view!(a).clone().into_owned().into(),
+        }
+    }
+
+    pub fn ceil(&self) -> NDArrayOwned {
+        match self {
+            NDArrayView::Int(a) => view!(a).clone().into_owned().into(),
+            NDArrayView::Float(a) => view!(a).ceil().into(),
+            NDArrayView::Bool(a) => view!(a).clone().into_owned().into(),
+        }
+    }
+
+    pub fn round(&self) -> NDArrayOwned {
+        match self {
+            NDArrayView::Int(a) => view!(a).clone().into_owned().into(),
+            NDArrayView::Float(a) => view!(a).round().into(),
+            NDArrayView::Bool(a) => view!(a).clone().into_owned().into(),
+        }
+    }
+
+    unary_float_fn!(cos);
+    unary_float_fn!(sin);
+    unary_float_fn!(tan);
+    unary_float_fn!(sqrt);
+    unary_float_fn!(log2);
+    unary_float_fn!(log10);
 }
 
 impl std::fmt::Display for NDArrayView {

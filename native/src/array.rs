@@ -38,6 +38,17 @@ macro_rules! view_binop_scalar {
     };
 }
 
+macro_rules! unary_fn {
+    ($name: ident) => {
+        pub fn $name(&mut self) -> NDArray {
+            match self {
+                NDArray::Owned(a) => a.view().$name().into(),
+                NDArray::View(a) => a.$name().into()
+            }
+        }
+    };
+}
+
 impl NDArray {
     pub fn new(tp: NDArrayType, shape: Vec<usize>) -> Self {
         NDArray::from(NDArrayOwned::new(tp, shape))
@@ -289,6 +300,16 @@ impl NDArray {
             (NDArray::View(a), NDArray::View(b)) => a.concat(b, axis).into(),
         }
     }
+
+    unary_fn!(floor);
+    unary_fn!(ceil);
+    unary_fn!(round);
+    unary_fn!(cos);
+    unary_fn!(sin);
+    unary_fn!(tan);
+    unary_fn!(sqrt);
+    unary_fn!(log2);
+    unary_fn!(log10);
 }
 
 impl Display for NDArray {
