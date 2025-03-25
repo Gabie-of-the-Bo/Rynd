@@ -1,6 +1,6 @@
 use ndarray::{Array1, ArrayBase, ArrayViewD, Axis, Dim, Ix2, IxDynImpl, OwnedRepr, RawArrayViewMut, Slice, Zip};
 
-use crate::{algorithms::{argmax_axis, argmin_axis, argsort_axis, concat_axis, cumsum_axis, diff_axis, max_axis, min_axis, sort_view_axis, stack_axis}, owned::NDArrayOwned, rynd_error};
+use crate::{algorithms::{argmax_axis, argmin_axis, argsort_axis, concat_axis, cumsum_axis, diff_axis, max_axis, min_axis, reverse_axis, sort_view_axis, stack_axis}, owned::NDArrayOwned, rynd_error};
 
 type DynRawArrayView<T> = RawArrayViewMut<T, Dim<IxDynImpl>>;
 #[derive(Clone)]
@@ -501,6 +501,14 @@ impl NDArrayView {
                 }
             },
         }
+    }
+
+    pub fn axis_reverse(&mut self, axis: usize) -> NDArrayView {
+        match self {
+            NDArrayView::Int(a) => reverse_axis(&mut view_mut!(a), Axis(axis)).raw_view_mut().into(),
+            NDArrayView::Float(a) => reverse_axis(&mut view_mut!(a), Axis(axis)).raw_view_mut().into(),
+            NDArrayView::Bool(a) => reverse_axis(&mut view_mut!(a), Axis(axis)).raw_view_mut().into()
+        }    
     }
 
     pub fn axis_sum(&self, axis: usize) -> NDArrayOwned {

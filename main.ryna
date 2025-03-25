@@ -80,6 +80,7 @@ let RYND_AX_ARGMIN = RYND_LIB.demut().get_function("axis_argmin_array");
 let RYND_AX_ARGMAX = RYND_LIB.demut().get_function("axis_argmax_array");
 let RYND_AX_DIFF = RYND_LIB.demut().get_function("axis_diff_array");
 let RYND_AX_CUMSUM = RYND_LIB.demut().get_function("axis_cumsum_array");
+let RYND_AX_REV = RYND_LIB.demut().get_function("axis_reverse_array");
 
 let RYND_PRINT = RYND_LIB.demut().get_function("print_array");
 
@@ -559,6 +560,14 @@ fn<T> diff(arr: 'T [NDArrayBase]) -> NDArray {
 
 fn<T> diff(arr: 'T [NDArrayBase], dim: Int) -> NDArray {
     return NDArray(RYND_AX_DIFF.demut().call(arr.ptr(), *dim).as<Pointer>());
+}
+
+fn<T> reverse(arr: 'T [NDArrayBase]) -> NDArray {
+    return NDArray(RYND_AX_REV.demut().call(arr.ptr(), -1).as<Pointer>());
+}
+
+fn<T> reverse(arr: 'T [NDArrayBase], dim: Int) -> NDArray {
+    return NDArray(RYND_AX_REV.demut().call(arr.ptr(), *dim).as<Pointer>());
 }
 
 fn<T, G> stack(a: 'T [NDArrayBase], b: 'G [NDArrayBase], dim: Int) -> NDArray {

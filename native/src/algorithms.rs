@@ -62,6 +62,13 @@ where
     }
 }
 
+pub fn reverse_axis<'a, T, D>(view: &'a mut ArrayViewMut<T, D>, axis: Axis) -> ArrayViewMut<'a, T, D>
+where
+    D: Dimension,
+{
+    view.slice_axis_mut(axis, Slice::from(0..).step_by(-1))
+}
+
 pub fn diff_axis<T, D>(view: &ArrayView<T, D>, axis: Axis) -> Array<T, D>
 where
     T: Copy + std::ops::Sub<Output = T>,

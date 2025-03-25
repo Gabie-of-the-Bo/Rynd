@@ -1,5 +1,3 @@
-use ndarray::Slice;
-
 use crate::array::NDArray;
 
 #[macro_export]
@@ -80,17 +78,39 @@ pub fn rynd_dims_check(arr: &NDArray, min_dims: Option<usize>, max_dims: Option<
     }
 }
 
-pub fn rynd_slice_check(arr: &NDArray, slice: &Slice, dim_idx: usize) {
+pub fn rynd_slice_check(arr: &NDArray, start: isize, end: isize, step: isize, dim_idx: usize) {
     let shape = arr.shape();
     let dim = shape[dim_idx];
 
-    if slice.start.abs() as usize >= dim {
-        rynd_error!("Slice start out of bounds for dimension {} ({} >= {})", dim_idx, slice.start, dim);
+    if step == 0 {
+        rynd_error!("Slice step cannot be 0");
     }
 
-    if let Some(end) = slice.end {
-        if end.abs() as usize > dim {
-            rynd_error!("Slice end out of bounds for dimension {} ({} > {})", dim_idx, end, dim);
+    if start >= 0 {
+        if start as usize >= dim {
+            rynd_error!("Slice start out of bounds for dimension {} ({} >= {})", dim_idx, start, dim);
         }
+
+    } else {
+        let adjusted = 1 + dim as isize + start;
+
+        if adjusted < 0 || adjusted as usize >= dim {
+            rynd_error!("Negative slice start out of bounds for dimension {} ({} given, size is {})", dim_idx, start, dim);
+        }
+
+    }
+
+    if end >= 0 {
+        if end as usize > dim {
+            rynd_error!("Slice end out of bounds for dimension {} ({} >= {})", dim_idx, end, dim);
+        }
+
+    } else {
+        let adjusted = 1 + dim as isize + end;
+
+        if adjusted < 0 || adjusted as usize > dim {
+            rynd_error!("Negative slice end out of bounds for dimension {} ({} given, size is {})", dim_idx, end, dim);
+        }
+
     }
 }

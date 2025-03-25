@@ -225,12 +225,17 @@ ryna_ffi_function!(slice_array(args, out) {
         .map(|i| i.as_i64() as isize)
         .collect::<Vec<_>>()
         .chunks_exact(3)
-        .map(|s| Slice::new(s[0], if s[1] == -1 { None } else { Some(s[1]) }, s[2]))
-        .collect::<Vec<_>>();
+        .zip(arr.shape().iter().enumerate())
+        .map(|(s, (d_idx, d))| {
+            rynd_slice_check(arr, s[0], s[1], s[2], d_idx);
 
-    for (dim_idx, slice) in slices.iter().enumerate() {
-        rynd_slice_check(arr, slice, dim_idx);
-    }
+            let start = if s[0] >= 0 { s[0] } else { 1 + *d as isize + s[0] };
+            let end = if s[1] >= 0 { s[1] } else { 1 + *d as isize + s[1] };
+            let step = s[2];
+
+            Slice::new(start, Some(end), step)
+        })
+        .collect::<Vec<_>>();
 
     let res = Box::new(arr.slice(slices));
     let view_ptr = register_and_leak(res);
@@ -385,6 +390,21 @@ ryna_ffi_function!(axis_sort_array(args, _out) {
     rynd_normalize_dim(arr, &mut dim);
 
     arr.axis_sort(dim as usize);
+});
+
+ryna_ffi_function!(axis_reverse_array(args, out) {
+    let arr_ptr = args[0].as_ptr();
+    let arr = ptr_to_ref(arr_ptr);
+    let mut dim = args[1].as_i64();
+    
+    rynd_normalize_dim(arr, &mut dim);
+
+    let res = Box::new(arr.axis_reverse(dim as usize));
+    let view_ptr = register_and_leak(res);
+
+    register_view(arr_ptr, view_ptr);
+
+    unsafe { *out = view_ptr.into(); }
 });
 
 // Utility

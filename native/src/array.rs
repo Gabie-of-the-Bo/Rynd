@@ -263,6 +263,7 @@ impl NDArray {
     axis_fn!(axis_max);
     axis_fn!(axis_argmin);
     axis_fn!(axis_argmax);
+    axis_fn!(axis_reverse);
 
     pub fn axis_sort(&mut self, axis: usize) {
         match self {
