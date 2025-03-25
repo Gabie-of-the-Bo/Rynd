@@ -67,6 +67,7 @@ let RYND_TAN = RYND_LIB.demut().get_function("tan_array");
 let RYND_SQRT = RYND_LIB.demut().get_function("sqrt_array");
 let RYND_LOG2 = RYND_LIB.demut().get_function("log2_array");
 let RYND_LOG10 = RYND_LIB.demut().get_function("log10_array");
+let RYND_CLIP = RYND_LIB.demut().get_function("clip_array");
 
 let RYND_AX_SUM = RYND_LIB.demut().get_function("axis_sum_array");
 let RYND_AX_MEAN = RYND_LIB.demut().get_function("axis_mean_array");
@@ -634,6 +635,10 @@ fn<T> log2(a: 'T [NDArrayBase]) -> NDArray {
 
 fn<T> log10(a: 'T [NDArrayBase]) -> NDArray {
     return NDArray(RYND_LOG10.demut().call(a.ptr()).as<Pointer>());
+}
+
+fn<T> clip(a: 'T [NDArrayBase], low: Float, high: Float) -> NDArray {
+    return NDArray(RYND_CLIP.demut().call(a.ptr(), *low, *high).as<Pointer>());
 }
 
 // Formatting

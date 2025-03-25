@@ -649,6 +649,14 @@ impl NDArrayView {
         }
     }
 
+    pub fn clip(&self, low: f64, high: f64) -> NDArrayOwned {
+        match self {
+            NDArrayView::Int(a) => view!(a).clamp(low as i64, high as i64).into(),
+            NDArrayView::Float(a) => view!(a).clamp(low, high).into(),
+            NDArrayView::Bool(_) => rynd_error!("Unable to clip a boolean array"),
+        }
+    }
+
     unary_float_fn!(cos);
     unary_float_fn!(sin);
     unary_float_fn!(tan);

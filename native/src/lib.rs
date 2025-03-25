@@ -355,6 +355,16 @@ unary_rynd_fn!(sqrt_array, sqrt);
 unary_rynd_fn!(log2_array, log2);
 unary_rynd_fn!(log10_array, log10);
 
+ryna_ffi_function!(clip_array(args, out) {
+    let arr = ptr_to_ref(args[0].as_ptr());
+    let low = args[1].as_f64();
+    let high = args[2].as_f64();
+    
+    let array = Box::new(arr.clip(low, high));
+
+    unsafe { *out = register_and_leak(array).into(); }
+});
+
 // Axis functions
 macro_rules! axis_rynd_fn {
     ($public_name: ident, $name: ident) => {

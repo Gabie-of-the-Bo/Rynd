@@ -299,6 +299,13 @@ impl NDArray {
     unary_fn!(sqrt);
     unary_fn!(log2);
     unary_fn!(log10);
+
+    pub fn clip(&mut self, low: f64, high: f64) -> NDArray {
+        match self {
+            NDArray::Owned(a) => a.view().clip(low, high).into(),
+            NDArray::View(a) => a.clip(low, high).into()
+        }
+    }
 }
 
 impl Display for NDArray {
