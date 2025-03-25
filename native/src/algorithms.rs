@@ -1,4 +1,4 @@
-use ndarray::{Array, ArrayView, ArrayViewMut, Axis, Dimension, RemoveAxis};
+use ndarray::{Array, ArrayView, ArrayViewMut, Axis, Dimension, RemoveAxis, Slice};
 
 use crate::rynd_error;
 
@@ -60,4 +60,87 @@ where
         Ok(r) => r,
         Err(_) => rynd_error!("Unable to concatenate arrays of shape {:?} and {:?} over axis {}", a.shape(), b.shape(), axis.0),
     }
+}
+
+pub fn diff_axis<T, D>(view: &ArrayView<T, D>, axis: Axis) -> Array<T, D>
+where
+    T: Copy + std::ops::Sub<Output = T>,
+    D: Dimension,
+{
+    let first = view.slice_axis(axis, Slice::from(..-1));
+    let second = view.slice_axis(axis, Slice::from(1..));
+
+    &second - &first
+}
+
+pub fn cumsum_axis<T, D>(view: &ArrayView<T, D>, axis: Axis) -> Array<T, D>
+where
+    T: Copy + std::ops::Add<Output = T>,
+    D: Dimension,
+{
+    let mut result = view.to_owned();
+    
+    for mut lane in result.lanes_mut(axis) {
+        if !lane.is_empty() {
+            for i in 1..lane.len() {
+                lane[i] = lane[i - 1] + lane[i];
+            }
+        }
+    }
+
+    result
+}
+
+pub fn min_axis<T, D>(view: &ArrayView<T, D>, axis: Axis) -> Array<T, D::Smaller>
+where
+    T: Copy + PartialOrd,
+    D: RemoveAxis,
+{
+    view.map_axis(axis, |lane| {
+        lane.iter()
+            .copied()
+            .min_by(|a, b| a.partial_cmp(b).unwrap())
+            .unwrap()
+    })
+}
+
+pub fn max_axis<T, D>(view: &ArrayView<T, D>, axis: Axis) -> Array<T, D::Smaller>
+where
+    T: Copy + PartialOrd,
+    D: RemoveAxis,
+{
+    view.map_axis(axis, |lane| {
+        lane.iter()
+            .copied()
+            .max_by(|a, b| a.partial_cmp(b).unwrap())
+            .unwrap()
+    })
+}
+
+pub fn argmin_axis<T, D>(view: &ArrayView<T, D>, axis: Axis) -> Array<i64, D::Smaller>
+where
+    T: Copy + PartialOrd,
+    D: RemoveAxis,
+{
+    view.map_axis(axis, |lane| {
+        lane.iter()
+            .enumerate()
+            .min_by(|(_, a), (_, b)| a.partial_cmp(b).unwrap())
+            .map(|(i, _)| i as i64)
+            .unwrap()
+    })
+}
+
+pub fn argmax_axis<T, D>(view: &ArrayView<T, D>, axis: Axis) -> Array<i64, D::Smaller>
+where
+    T: Copy + PartialOrd,
+    D: RemoveAxis,
+{
+    view.map_axis(axis, |lane| {
+        lane.iter()
+            .enumerate()
+            .max_by(|(_, a), (_, b)| a.partial_cmp(b).unwrap())
+            .map(|(i, _)| i as i64)
+            .unwrap()
+    })
 }

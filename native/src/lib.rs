@@ -351,49 +351,32 @@ unary_rynd_fn!(log2_array, log2);
 unary_rynd_fn!(log10_array, log10);
 
 // Axis functions
-ryna_ffi_function!(axis_sum_array(args, out) {
-    let arr = ptr_to_ref(args[0].as_ptr());
-    let mut dim = args[1].as_i64();
-    
-    rynd_normalize_dim(arr, &mut dim);
+macro_rules! axis_rynd_fn {
+    ($public_name: ident, $name: ident) => {
+        ryna_ffi_function!($public_name(args, out) {
+            let arr = ptr_to_ref(args[0].as_ptr());
+            let mut dim = args[1].as_i64();
+            
+            rynd_normalize_dim(arr, &mut dim);
+        
+            let array = Box::new(arr.$name(dim as usize));
+        
+            unsafe { *out = register_and_leak(array).into(); }
+        });
+    };
+}
 
-    let array = Box::new(arr.axis_sum(dim as usize));
-
-    unsafe { *out = register_and_leak(array).into(); }
-});
-
-ryna_ffi_function!(axis_mean_array(args, out) {
-    let arr = ptr_to_ref(args[0].as_ptr());
-    let mut dim = args[1].as_i64();
-    
-    rynd_normalize_dim(arr, &mut dim);
-
-    let array = Box::new(arr.axis_mean(dim as usize));
-
-    unsafe { *out = register_and_leak(array).into(); }
-});
-
-ryna_ffi_function!(axis_var_array(args, out) {
-    let arr = ptr_to_ref(args[0].as_ptr());
-    let mut dim = args[1].as_i64();
-    
-    rynd_normalize_dim(arr, &mut dim);
-
-    let array = Box::new(arr.axis_var(dim as usize));
-
-    unsafe { *out = register_and_leak(array).into(); }
-});
-
-ryna_ffi_function!(axis_std_array(args, out) {
-    let arr = ptr_to_ref(args[0].as_ptr());
-    let mut dim = args[1].as_i64();
-    
-    rynd_normalize_dim(arr, &mut dim);
-
-    let array = Box::new(arr.axis_std(dim as usize));
-
-    unsafe { *out = register_and_leak(array).into(); }
-});
+axis_rynd_fn!(axis_sum_array, axis_sum);
+axis_rynd_fn!(axis_mean_array, axis_mean);
+axis_rynd_fn!(axis_var_array, axis_var);
+axis_rynd_fn!(axis_std_array, axis_std);
+axis_rynd_fn!(axis_argsort_array, axis_argsort);
+axis_rynd_fn!(axis_diff_array, axis_diff);
+axis_rynd_fn!(axis_cumsum_array, axis_cumsum);
+axis_rynd_fn!(axis_min_array, axis_min);
+axis_rynd_fn!(axis_max_array, axis_max);
+axis_rynd_fn!(axis_argmin_array, axis_argmin);
+axis_rynd_fn!(axis_argmax_array, axis_argmax);
 
 ryna_ffi_function!(axis_sort_array(args, _out) {
     let arr = ptr_to_ref(args[0].as_ptr());
@@ -402,17 +385,6 @@ ryna_ffi_function!(axis_sort_array(args, _out) {
     rynd_normalize_dim(arr, &mut dim);
 
     arr.axis_sort(dim as usize);
-});
-
-ryna_ffi_function!(axis_argsort_array(args, out) {
-    let arr = ptr_to_ref(args[0].as_ptr());
-    let mut dim = args[1].as_i64();
-    
-    rynd_normalize_dim(arr, &mut dim);
-
-    let array = Box::new(arr.axis_argsort(dim as usize));
-
-    unsafe { *out = register_and_leak(array).into(); }
 });
 
 // Utility

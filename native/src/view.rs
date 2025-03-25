@@ -1,6 +1,6 @@
 use ndarray::{Array1, ArrayBase, ArrayViewD, Axis, Dim, Ix2, IxDynImpl, OwnedRepr, RawArrayViewMut, Slice, Zip};
 
-use crate::{algorithms::{argsort_axis, concat_axis, sort_view_axis, stack_axis}, owned::NDArrayOwned, rynd_error};
+use crate::{algorithms::{argmax_axis, argmin_axis, argsort_axis, concat_axis, cumsum_axis, diff_axis, max_axis, min_axis, sort_view_axis, stack_axis}, owned::NDArrayOwned, rynd_error};
 
 type DynRawArrayView<T> = RawArrayViewMut<T, Dim<IxDynImpl>>;
 #[derive(Clone)]
@@ -548,6 +548,54 @@ impl NDArrayView {
             NDArrayView::Int(a) => view!(a).mapv(|i| i as f64).std_axis(Axis(axis), 0.0).into(),
             NDArrayView::Float(a) => view!(a).std_axis(Axis(axis), 0.0).into(),
             NDArrayView::Bool(a) => view!(a).mapv(|i| i as i64 as f64).std_axis(Axis(axis), 0.0).into(),
+        }
+    }
+
+    pub fn axis_diff(&self, axis: usize) -> NDArrayOwned {
+        match self {
+            NDArrayView::Int(a) => diff_axis(view!(a), Axis(axis)).into(),
+            NDArrayView::Float(a) => diff_axis(view!(a), Axis(axis)).into(),
+            NDArrayView::Bool(a) => diff_axis(&view!(a).mapv(|i| i as i64).view(), Axis(axis)).into(),
+        }
+    }
+
+    pub fn axis_cumsum(&self, axis: usize) -> NDArrayOwned {
+        match self {
+            NDArrayView::Int(a) => cumsum_axis(view!(a), Axis(axis)).into(),
+            NDArrayView::Float(a) => cumsum_axis(view!(a), Axis(axis)).into(),
+            NDArrayView::Bool(a) => cumsum_axis(&view!(a).mapv(|i| i as i64).view(), Axis(axis)).into(),
+        }
+    }
+
+    pub fn axis_min(&self, axis: usize) -> NDArrayOwned {
+        match self {
+            NDArrayView::Int(a) => min_axis(view!(a), Axis(axis)).into(),
+            NDArrayView::Float(a) => min_axis(view!(a), Axis(axis)).into(),
+            NDArrayView::Bool(a) => min_axis(&view!(a).mapv(|i| i as i64).view(), Axis(axis)).into(),
+        }
+    }
+
+    pub fn axis_max(&self, axis: usize) -> NDArrayOwned {
+        match self {
+            NDArrayView::Int(a) => max_axis(view!(a), Axis(axis)).into(),
+            NDArrayView::Float(a) => max_axis(view!(a), Axis(axis)).into(),
+            NDArrayView::Bool(a) => max_axis(&view!(a).mapv(|i| i as i64).view(), Axis(axis)).into(),
+        }
+    }
+
+    pub fn axis_argmin(&self, axis: usize) -> NDArrayOwned {
+        match self {
+            NDArrayView::Int(a) => argmin_axis(view!(a), Axis(axis)).into(),
+            NDArrayView::Float(a) => argmin_axis(view!(a), Axis(axis)).into(),
+            NDArrayView::Bool(a) => argmin_axis(&view!(a).mapv(|i| i as i64).view(), Axis(axis)).into(),
+        }
+    }
+
+    pub fn axis_argmax(&self, axis: usize) -> NDArrayOwned {
+        match self {
+            NDArrayView::Int(a) => argmax_axis(view!(a), Axis(axis)).into(),
+            NDArrayView::Float(a) => argmax_axis(view!(a), Axis(axis)).into(),
+            NDArrayView::Bool(a) => argmax_axis(&view!(a).mapv(|i| i as i64).view(), Axis(axis)).into(),
         }
     }
 

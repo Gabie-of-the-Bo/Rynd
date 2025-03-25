@@ -74,6 +74,12 @@ let RYND_AX_VAR = RYND_LIB.demut().get_function("axis_var_array");
 let RYND_AX_STD = RYND_LIB.demut().get_function("axis_std_array");
 let RYND_AX_ARGSORT = RYND_LIB.demut().get_function("axis_argsort_array");
 let RYND_AX_SORT = RYND_LIB.demut().get_function("axis_sort_array");
+let RYND_AX_MIN = RYND_LIB.demut().get_function("axis_min_array");
+let RYND_AX_MAX = RYND_LIB.demut().get_function("axis_max_array");
+let RYND_AX_ARGMIN = RYND_LIB.demut().get_function("axis_argmin_array");
+let RYND_AX_ARGMAX = RYND_LIB.demut().get_function("axis_argmax_array");
+let RYND_AX_DIFF = RYND_LIB.demut().get_function("axis_diff_array");
+let RYND_AX_CUMSUM = RYND_LIB.demut().get_function("axis_cumsum_array");
 
 let RYND_PRINT = RYND_LIB.demut().get_function("print_array");
 
@@ -505,6 +511,54 @@ fn<T> sort(arr: 'T [NDArrayBase]) {
 
 fn<T> sort(arr: 'T [NDArrayBase], dim: Int) {
     RYND_AX_SORT.demut().call(arr.ptr(), *dim);
+}
+
+fn<T> min(arr: 'T [NDArrayBase]) -> NDArray {
+    return NDArray(RYND_AX_MIN.demut().call(arr.ptr(), -1).as<Pointer>());
+}
+
+fn<T> min(arr: 'T [NDArrayBase], dim: Int) -> NDArray {
+    return NDArray(RYND_AX_MIN.demut().call(arr.ptr(), *dim).as<Pointer>());
+}
+
+fn<T> max(arr: 'T [NDArrayBase]) -> NDArray {
+    return NDArray(RYND_AX_MAX.demut().call(arr.ptr(), -1).as<Pointer>());
+}
+
+fn<T> max(arr: 'T [NDArrayBase], dim: Int) -> NDArray {
+    return NDArray(RYND_AX_MAX.demut().call(arr.ptr(), *dim).as<Pointer>());
+}
+
+fn<T> argmin(arr: 'T [NDArrayBase]) -> NDArray {
+    return NDArray(RYND_AX_ARGMIN.demut().call(arr.ptr(), -1).as<Pointer>());
+}
+
+fn<T> argmin(arr: 'T [NDArrayBase], dim: Int) -> NDArray {
+    return NDArray(RYND_AX_ARGMIN.demut().call(arr.ptr(), *dim).as<Pointer>());
+}
+
+fn<T> argmax(arr: 'T [NDArrayBase]) -> NDArray {
+    return NDArray(RYND_AX_ARGMAX.demut().call(arr.ptr(), -1).as<Pointer>());
+}
+
+fn<T> argmax(arr: 'T [NDArrayBase], dim: Int) -> NDArray {
+    return NDArray(RYND_AX_ARGMAX.demut().call(arr.ptr(), *dim).as<Pointer>());
+}
+
+fn<T> cumsum(arr: 'T [NDArrayBase]) -> NDArray {
+    return NDArray(RYND_AX_CUMSUM.demut().call(arr.ptr(), -1).as<Pointer>());
+}
+
+fn<T> cumsum(arr: 'T [NDArrayBase], dim: Int) -> NDArray {
+    return NDArray(RYND_AX_CUMSUM.demut().call(arr.ptr(), *dim).as<Pointer>());
+}
+
+fn<T> diff(arr: 'T [NDArrayBase]) -> NDArray {
+    return NDArray(RYND_AX_DIFF.demut().call(arr.ptr(), -1).as<Pointer>());
+}
+
+fn<T> diff(arr: 'T [NDArrayBase], dim: Int) -> NDArray {
+    return NDArray(RYND_AX_DIFF.demut().call(arr.ptr(), *dim).as<Pointer>());
 }
 
 fn<T, G> stack(a: 'T [NDArrayBase], b: 'G [NDArrayBase], dim: Int) -> NDArray {

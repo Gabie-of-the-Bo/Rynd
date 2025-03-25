@@ -38,6 +38,17 @@ macro_rules! view_binop_scalar {
     };
 }
 
+macro_rules! axis_fn {
+    ($name: ident) => {
+        pub fn $name(&mut self, axis: usize) -> NDArray {
+            match self {
+                NDArray::Owned(a) => a.view().$name(axis).into(),
+                NDArray::View(a) => a.$name(axis).into(),
+            }
+        }
+    };
+}
+
 macro_rules! unary_fn {
     ($name: ident) => {
         pub fn $name(&mut self) -> NDArray {
@@ -241,45 +252,22 @@ impl NDArray {
     view_binop_scalar!(geq_scalar_i64, i64);
     view_binop_scalar!(geq_scalar_f64, f64);
 
-    pub fn axis_sum(&mut self, axis: usize) -> NDArray {
-        match self {
-            NDArray::Owned(a) => a.view().axis_sum(axis).into(),
-            NDArray::View(a) => a.axis_sum(axis).into(),
-        }
-    }
-
-    pub fn axis_mean(&mut self, axis: usize) -> NDArray {
-        match self {
-            NDArray::Owned(a) => a.view().axis_mean(axis).into(),
-            NDArray::View(a) => a.axis_mean(axis).into(),
-        }
-    }
-
-    pub fn axis_var(&mut self, axis: usize) -> NDArray {
-        match self {
-            NDArray::Owned(a) => a.view().axis_var(axis).into(),
-            NDArray::View(a) => a.axis_var(axis).into(),
-        }
-    }
-
-    pub fn axis_std(&mut self, axis: usize) -> NDArray {
-        match self {
-            NDArray::Owned(a) => a.view().axis_std(axis).into(),
-            NDArray::View(a) => a.axis_std(axis).into(),
-        }
-    }
+    axis_fn!(axis_sum);
+    axis_fn!(axis_mean);
+    axis_fn!(axis_var);
+    axis_fn!(axis_std);
+    axis_fn!(axis_argsort);
+    axis_fn!(axis_diff);
+    axis_fn!(axis_cumsum);
+    axis_fn!(axis_min);
+    axis_fn!(axis_max);
+    axis_fn!(axis_argmin);
+    axis_fn!(axis_argmax);
 
     pub fn axis_sort(&mut self, axis: usize) {
         match self {
             NDArray::Owned(a) => a.view().axis_sort(axis).into(),
             NDArray::View(a) => a.axis_sort(axis).into(),
-        }
-    }
-
-    pub fn axis_argsort(&mut self, axis: usize) -> NDArray {
-        match self {
-            NDArray::Owned(a) => a.view().axis_argsort(axis).into(),
-            NDArray::View(a) => a.axis_argsort(axis).into(),
         }
     }
 
