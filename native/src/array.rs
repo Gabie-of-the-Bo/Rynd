@@ -293,6 +293,7 @@ impl NDArray {
     unary_fn!(floor);
     unary_fn!(ceil);
     unary_fn!(round);
+    unary_fn!(nonzero);
     unary_fn!(cos);
     unary_fn!(sin);
     unary_fn!(tan);

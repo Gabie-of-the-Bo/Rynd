@@ -61,6 +61,7 @@ let RYND_MATMUL = RYND_LIB.demut().get_function("matmul");
 let RYND_FLOOR = RYND_LIB.demut().get_function("floor_array");
 let RYND_CEIL = RYND_LIB.demut().get_function("ceil_array");
 let RYND_ROUND = RYND_LIB.demut().get_function("round_array");
+let RYND_NONZERO = RYND_LIB.demut().get_function("nonzero_array");
 let RYND_COS = RYND_LIB.demut().get_function("cos_array");
 let RYND_SIN = RYND_LIB.demut().get_function("sin_array");
 let RYND_TAN = RYND_LIB.demut().get_function("tan_array");
@@ -611,6 +612,10 @@ fn<T> ceil(a: 'T [NDArrayBase]) -> NDArray {
 
 fn<T> round(a: 'T [NDArrayBase]) -> NDArray {
     return NDArray(RYND_ROUND.demut().call(a.ptr()).as<Pointer>());
+}
+
+fn<T> nonzero(a: 'T [NDArrayBase]) -> NDArray {
+    return NDArray(RYND_NONZERO.demut().call(a.ptr()).as<Pointer>());
 }
 
 fn<T> cos(a: 'T [NDArrayBase]) -> NDArray {

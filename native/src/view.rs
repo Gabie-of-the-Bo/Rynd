@@ -1,6 +1,6 @@
 use ndarray::{Array1, ArrayBase, ArrayViewD, Axis, Dim, Ix2, IxDynImpl, OwnedRepr, RawArrayViewMut, Slice, Zip};
 
-use crate::{algorithms::{argmax_axis, argmin_axis, argsort_axis, concat_axis, cumsum_axis, diff_axis, max_axis, min_axis, reverse_axis, sort_view_axis, stack_axis}, owned::NDArrayOwned, rynd_error};
+use crate::{algorithms::{argmax_axis, argmin_axis, argsort_axis, concat_axis, cumsum_axis, diff_axis, max_axis, min_axis, nonzero, reverse_axis, sort_view_axis, stack_axis}, owned::NDArrayOwned, rynd_error};
 
 type DynRawArrayView<T> = RawArrayViewMut<T, Dim<IxDynImpl>>;
 #[derive(Clone)]
@@ -646,6 +646,14 @@ impl NDArrayView {
             NDArrayView::Int(a) => view!(a).clone().into_owned().into(),
             NDArrayView::Float(a) => view!(a).round().into(),
             NDArrayView::Bool(a) => view!(a).clone().into_owned().into(),
+        }
+    }
+
+    pub fn nonzero(&self) -> NDArrayOwned {
+        match self {
+            NDArrayView::Int(a) => nonzero(view!(a)).into_dyn().into(),
+            NDArrayView::Float(a) => nonzero(view!(a)).into_dyn().into(),
+            NDArrayView::Bool(a) => nonzero(&view!(a).mapv(|i| i as i64).view()).into_dyn().into(),
         }
     }
 

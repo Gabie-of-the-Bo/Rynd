@@ -1,4 +1,5 @@
-use ndarray::{Array, ArrayView, ArrayViewMut, Axis, Dimension, RemoveAxis, Slice};
+use ndarray::{Array, ArrayView, ArrayViewMut, Axis, Dimension, IntoDimension, Ix2, RemoveAxis, Slice};
+use rand_distr::num_traits::Zero;
 
 use crate::rynd_error;
 
@@ -150,4 +151,24 @@ where
             .map(|(i, _)| i as i64)
             .unwrap()
     })
+}
+
+pub fn nonzero<T, D>(view: &ArrayView<T, D>) -> Array<i64, Ix2>
+where
+    T: PartialEq + Zero,
+    D: Dimension,
+{
+    let ndim = view.ndim();
+
+    let indices: Vec<i64> = view
+        .indexed_iter()
+        .filter(|(_, value)| **value != T::zero())
+        .flat_map(|(index, _)| {
+            index.into_dimension().slice().iter().map(|&ix| ix as i64).collect::<Vec<_>>()
+        })
+        .collect();
+    
+    let num_nonzero = indices.len() / ndim;
+    
+    Array::from_shape_vec((num_nonzero, ndim), indices).unwrap()
 }

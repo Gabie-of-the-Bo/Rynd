@@ -348,6 +348,7 @@ macro_rules! unary_rynd_fn {
 unary_rynd_fn!(floor_array, floor);
 unary_rynd_fn!(ceil_array, ceil);
 unary_rynd_fn!(round_array, round);
+unary_rynd_fn!(nonzero_array, nonzero);
 unary_rynd_fn!(cos_array, cos);
 unary_rynd_fn!(sin_array, sin);
 unary_rynd_fn!(tan_array, tan);
