@@ -163,6 +163,25 @@ impl NDArrayView {
         }
     }
 
+    pub fn assign_mask(&self, other: &NDArrayView, mask: &NDArrayView) {
+        let m = match mask {
+            NDArrayView::Bool(m) => m,
+            _ => unreachable!()
+        };
+
+        match (self, other) {
+            (NDArrayView::Int(a), NDArrayView::Int(b)) => Zip::from(view_mut!(a)).and(view!(b)).and(view!(m)).for_each(|a, v, m| if *m { *a = *v; }),
+            (NDArrayView::Int(a), NDArrayView::Float(b)) => Zip::from(view_mut!(a)).and(view!(b)).and(view!(m)).for_each(|a, v, m| if *m { *a = *v as i64; }),
+            (NDArrayView::Int(a), NDArrayView::Bool(b)) => Zip::from(view_mut!(a)).and(view!(b)).and(view!(m)).for_each(|a, v, m| if *m { *a = *v as i64; }),
+            (NDArrayView::Float(a), NDArrayView::Int(b)) => Zip::from(view_mut!(a)).and(view!(b)).and(view!(m)).for_each(|a, v, m| if *m { *a = *v as f64; }),
+            (NDArrayView::Float(a), NDArrayView::Float(b)) => Zip::from(view_mut!(a)).and(view!(b)).and(view!(m)).for_each(|a, v, m| if *m { *a = *v; }),
+            (NDArrayView::Float(a), NDArrayView::Bool(b)) => Zip::from(view_mut!(a)).and(view!(b)).and(view!(m)).for_each(|a, v, m| if *m { *a = *v as i64 as f64; }),
+            (NDArrayView::Bool(a), NDArrayView::Int(b)) => Zip::from(view_mut!(a)).and(view!(b)).and(view!(m)).for_each(|a, v, m| if *m { *a = *v != 0; }),
+            (NDArrayView::Bool(a), NDArrayView::Float(b)) => Zip::from(view_mut!(a)).and(view!(b)).and(view!(m)).for_each(|a, v, m| if *m { *a = *v != 0.0; }),
+            (NDArrayView::Bool(a), NDArrayView::Bool(b)) => Zip::from(view_mut!(a)).and(view!(b)).and(view!(m)).for_each(|a, v, m| if *m { *a = *v; }),
+        }
+    }
+
     pub fn len(&self) -> usize {
         match_op!(self, a, a.len())
     }
@@ -208,6 +227,32 @@ impl NDArrayView {
             NDArrayView::Int(a) => view_mut!(a).iter_mut().for_each(|i| *i = other as i64),
             NDArrayView::Float(a) => view_mut!(a).iter_mut().for_each(|i| *i = other),
             NDArrayView::Bool(a) => view_mut!(a).iter_mut().for_each(|i| *i = other != 0.0),
+        }
+    }
+
+    pub fn assign_scalar_i64_mask(&self, other: i64, mask: &NDArrayView) {
+        let m = match mask {
+            NDArrayView::Bool(m) => m,
+            _ => unreachable!()
+        };
+        
+        match self {
+            NDArrayView::Int(a) => view_mut!(a).zip_mut_with(view!(m), |i, v| if *v { *i = other }),
+            NDArrayView::Float(a) => view_mut!(a).zip_mut_with(view!(m), |i, v| if *v { *i = other as f64 }),
+            NDArrayView::Bool(a) => view_mut!(a).zip_mut_with(view!(m), |i, v| if *v { *i = other != 0 }),
+        }
+    }
+
+    pub fn assign_scalar_f64_mask(&self, other: f64, mask: &NDArrayView) {
+        let m = match mask {
+            NDArrayView::Bool(m) => m,
+            _ => unreachable!()
+        };
+        
+        match self {
+            NDArrayView::Int(a) => view_mut!(a).zip_mut_with(view!(m), |i, v| if *v { *i = other as i64 }),
+            NDArrayView::Float(a) => view_mut!(a).zip_mut_with(view!(m), |i, v| if *v { *i = other }),
+            NDArrayView::Bool(a) => view_mut!(a).zip_mut_with(view!(m), |i, v| if *v { *i = other != 0.0 }),
         }
     }
 

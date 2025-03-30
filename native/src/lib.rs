@@ -104,7 +104,31 @@ ryna_ffi_function!(assign_arrays(args, _out) {
     let a = ptr_to_ref(args[0].as_ptr());
     let b = ptr_to_ref(args[1].as_ptr());
 
+    if a.shape() != b.shape() {
+        rynd_error!("Unable to assign array of shape {:?} to array of shape {:?}", b.shape(), a.shape());
+    }
+
     a.assign(b);
+});   
+
+ryna_ffi_function!(assign_arrays_mask(args, _out) {
+    let a = ptr_to_ref(args[0].as_ptr());
+    let b = ptr_to_ref(args[1].as_ptr());
+    let m = ptr_to_ref(args[2].as_ptr());
+
+    if a.shape() != b.shape() {
+        rynd_error!("Unable to assign array of shape {:?} to array of shape {:?}", b.shape(), a.shape());
+    }
+
+    if a.shape() != m.shape() {
+        rynd_error!("Mask shape ({:?}) does not match target array shape ({:?})", m.shape(), a.shape());
+    }
+
+    if !m.is_mask() {
+        rynd_error!("Given mask array is not a boolean mask");
+    }
+
+    a.assign_mask(b, m);
 });   
 
 macro_rules! binop_rynd_scalar_ffi {
@@ -160,6 +184,27 @@ ryna_ffi_function!(assign_array_scalar(args, _out) {
     match args[1] {
         FFIValue::Int(v) => a.assign_scalar_i64(v),
         FFIValue::Float(v) => a.assign_scalar_f64(v),
+        _ => unreachable!()
+    };
+});    
+
+ryna_ffi_function!(assign_array_scalar_mask(args, _out) {
+    use rynaffi::FFIValue;
+
+    let a = ptr_to_ref(args[0].as_ptr());
+    let m = ptr_to_ref(args[2].as_ptr());
+
+    if a.shape() != m.shape() {
+        rynd_error!("Mask shape ({:?}) does not match target array shape ({:?})", m.shape(), a.shape());
+    }
+
+    if !m.is_mask() {
+        rynd_error!("Given mask array is not a boolean mask");
+    }
+
+    match args[1] {
+        FFIValue::Int(v) => a.assign_scalar_i64_mask(v, m),
+        FFIValue::Float(v) => a.assign_scalar_f64_mask(v, m),
         _ => unreachable!()
     };
 });     

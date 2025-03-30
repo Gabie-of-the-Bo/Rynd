@@ -116,6 +116,13 @@ impl NDArray {
         }
     }
 
+    pub fn is_mask(&self) -> bool {
+        match self {
+            NDArray::Owned(a) => matches!(a, NDArrayOwned::Bool(_)),
+            NDArray::View(a) => matches!(a, NDArrayView::Bool(_)),
+        }
+    }
+
     pub fn get_i64(&mut self, idx: usize) -> i64 {
         match self {
             NDArray::Owned(a) => a.view().get_i64(idx),
@@ -188,6 +195,15 @@ impl NDArray {
             NDArray::View(v) => v.assign(&other.view()),
         }
     }
+
+    pub fn assign_mask(&mut self, other: &mut NDArray, mask: &mut NDArray) {
+        match (self, mask) {
+            (NDArray::Owned(a), NDArray::Owned(mask)) => a.view().assign_mask(&other.view(), &mask.view()),
+            (NDArray::Owned(a), NDArray::View(mask)) => a.view().assign_mask(&other.view(), mask),
+            (NDArray::View(a), NDArray::Owned(mask)) => a.assign_mask(&other.view(), &mask.view()),
+            (NDArray::View(a), NDArray::View(mask)) => a.assign_mask(&other.view(), mask),
+        }
+    }
     
     view_binop!(sum);
     view_binop!(sub);
@@ -213,6 +229,20 @@ impl NDArray {
         match self {
             NDArray::Owned(a) => a.view().assign_scalar_f64(other),
             NDArray::View(v) => v.assign_scalar_f64(other),
+        }
+    }
+
+    pub fn assign_scalar_i64_mask(&mut self, other: i64, mask: &mut NDArray) {
+        match self {
+            NDArray::Owned(a) => a.view().assign_scalar_i64_mask(other, &mask.view()),
+            NDArray::View(v) => v.assign_scalar_i64_mask(other, &mask.view()),
+        }
+    }
+
+    pub fn assign_scalar_f64_mask(&mut self, other: f64, mask: &mut NDArray) {
+        match self {
+            NDArray::Owned(a) => a.view().assign_scalar_f64_mask(other, &mask.view()),
+            NDArray::View(v) => v.assign_scalar_f64_mask(other, &mask.view()),
         }
     }
 

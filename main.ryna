@@ -17,7 +17,9 @@ let RYND_LEN = RYND_LIB.demut().get_function("len");
 let RYND_SHAPE = RYND_LIB.demut().get_function("shape");
 let RYND_GET = RYND_LIB.demut().get_function("get_elem");
 let RYND_ASSIGN = RYND_LIB.demut().get_function("assign_arrays");
+let RYND_ASSIGN_MASK = RYND_LIB.demut().get_function("assign_arrays_mask");
 let RYND_ASSIGN_SCALAR = RYND_LIB.demut().get_function("assign_array_scalar");
+let RYND_ASSIGN_SCALAR_MASK = RYND_LIB.demut().get_function("assign_array_scalar_mask");
 let RYND_CAST = RYND_LIB.demut().get_function("cast_array");
 
 let RYND_SUM = RYND_LIB.demut().get_function("sum_arrays");
@@ -263,8 +265,16 @@ fn<L, R> assign(arr: 'L [NDArrayBase], value: 'R [NDArrayBase]) {
     RYND_ASSIGN.demut().call(arr.ptr(), value.ptr());
 }
 
+fn<L, R, M> assign(arr: 'L [NDArrayBase], value: 'R [NDArrayBase], mask: 'M [NDArrayBase]) {
+    RYND_ASSIGN_MASK.demut().call(arr.ptr(), value.ptr(), mask.ptr());
+}
+
 fn<T, S, SI> assign(arr: 'T [NDArrayBase], value: 'S [Scalar<'SI>]) {
     RYND_ASSIGN_SCALAR.demut().call(arr.ptr(), value.scalar());
+}
+
+fn<T, S, SI, M> assign(arr: 'T [NDArrayBase], value: 'S [Scalar<'SI>], mask: 'M [NDArrayBase]) {
+    RYND_ASSIGN_SCALAR_MASK.demut().call(arr.ptr(), value.scalar(), mask.ptr());
 }
 
 fn<T> len(arr: 'T [NDArrayBase]) -> Int {
