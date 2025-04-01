@@ -331,9 +331,17 @@ impl NDArray {
     unary_fn!(cos);
     unary_fn!(sin);
     unary_fn!(tan);
+    unary_fn!(acos);
+    unary_fn!(asin);
+    unary_fn!(atan);
     unary_fn!(sqrt);
+    unary_fn!(exp);
     unary_fn!(log2);
+    unary_fn!(ln);
     unary_fn!(log10);
+    unary_fn!(cosh);
+    unary_fn!(sinh);
+    unary_fn!(tanh);
 
     pub fn clip(&mut self, low: f64, high: f64) -> NDArray {
         match self {

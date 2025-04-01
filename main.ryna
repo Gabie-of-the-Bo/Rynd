@@ -71,9 +71,17 @@ let RYND_NONZERO = RYND_LIB.demut().get_function("nonzero_array");
 let RYND_COS = RYND_LIB.demut().get_function("cos_array");
 let RYND_SIN = RYND_LIB.demut().get_function("sin_array");
 let RYND_TAN = RYND_LIB.demut().get_function("tan_array");
+let RYND_ACOS = RYND_LIB.demut().get_function("acos_array");
+let RYND_ASIN = RYND_LIB.demut().get_function("asin_array");
+let RYND_ATAN = RYND_LIB.demut().get_function("atan_array");
 let RYND_SQRT = RYND_LIB.demut().get_function("sqrt_array");
+let RYND_EXP = RYND_LIB.demut().get_function("exp_array");
 let RYND_LOG2 = RYND_LIB.demut().get_function("log2_array");
+let RYND_LN = RYND_LIB.demut().get_function("ln_array");
 let RYND_LOG10 = RYND_LIB.demut().get_function("log10_array");
+let RYND_COSH = RYND_LIB.demut().get_function("cosh_array");
+let RYND_SINH = RYND_LIB.demut().get_function("sinh_array");
+let RYND_TANH = RYND_LIB.demut().get_function("tanh_array");
 let RYND_CLIP = RYND_LIB.demut().get_function("clip_array");
 
 let RYND_AX_SUM = RYND_LIB.demut().get_function("axis_sum_array");
@@ -235,6 +243,10 @@ fn<T> reshape(arr: 'T [NDArrayBase], d0: Int, d1: Int, d2: Int, d3: Int) -> NDAr
 
 fn<T> reshape(arr: 'T [NDArrayBase], d0: Int, d1: Int, d2: Int, d3: Int, d4: Int) -> NDArray {
     return NDArray(RYND_RESHAPE.demut().call(arr.ptr(), 5, *d0, *d1, *d2, *d3, *d4).as<Pointer>());
+}
+
+fn<T> flatten(arr: 'T [NDArrayBase]) -> NDArray {
+    return arr.reshape(arr.len());
 }
 
 fn<L, R> pow(a: 'L [NDArrayBase], b: 'R [NDArrayBase]) -> NDArray {
@@ -660,16 +672,48 @@ fn<T> tan(a: 'T [NDArrayBase]) -> NDArray {
     return NDArray(RYND_TAN.demut().call(a.ptr()).as<Pointer>());
 }
 
+fn<T> acos(a: 'T [NDArrayBase]) -> NDArray {
+    return NDArray(RYND_ACOS.demut().call(a.ptr()).as<Pointer>());
+}
+
+fn<T> asin(a: 'T [NDArrayBase]) -> NDArray {
+    return NDArray(RYND_ASIN.demut().call(a.ptr()).as<Pointer>());
+}
+
+fn<T> atan(a: 'T [NDArrayBase]) -> NDArray {
+    return NDArray(RYND_ATAN.demut().call(a.ptr()).as<Pointer>());
+}
+
 fn<T> sqrt(a: 'T [NDArrayBase]) -> NDArray {
     return NDArray(RYND_SQRT.demut().call(a.ptr()).as<Pointer>());
+}
+
+fn<T> exp(a: 'T [NDArrayBase]) -> NDArray {
+    return NDArray(RYND_EXP.demut().call(a.ptr()).as<Pointer>());
 }
 
 fn<T> log2(a: 'T [NDArrayBase]) -> NDArray {
     return NDArray(RYND_LOG2.demut().call(a.ptr()).as<Pointer>());
 }
 
+fn<T> ln(a: 'T [NDArrayBase]) -> NDArray {
+    return NDArray(RYND_LN.demut().call(a.ptr()).as<Pointer>());
+}
+
 fn<T> log10(a: 'T [NDArrayBase]) -> NDArray {
     return NDArray(RYND_LOG10.demut().call(a.ptr()).as<Pointer>());
+}
+
+fn<T> cosh(a: 'T [NDArrayBase]) -> NDArray {
+    return NDArray(RYND_COSH.demut().call(a.ptr()).as<Pointer>());
+}
+
+fn<T> sinh(a: 'T [NDArrayBase]) -> NDArray {
+    return NDArray(RYND_SINH.demut().call(a.ptr()).as<Pointer>());
+}
+
+fn<T> tanh(a: 'T [NDArrayBase]) -> NDArray {
+    return NDArray(RYND_TANH.demut().call(a.ptr()).as<Pointer>());
 }
 
 fn<T> clip(a: 'T [NDArrayBase], low: Float, high: Float) -> NDArray {

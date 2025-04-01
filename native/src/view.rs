@@ -158,6 +158,18 @@ macro_rules! unary_float_fn {
     };
 }
 
+macro_rules! unary_mapv_float_fn {
+    ($name: ident) => {
+        pub fn $name(&self) -> NDArrayOwned {
+            match self {
+                NDArrayView::Int(a) => view!(a).mapv(|i| (i as f64).$name()).into(),
+                NDArrayView::Float(a) => view!(a).mapv(|i| i.$name()).into(),
+                NDArrayView::Bool(a) => view!(a).mapv(|i| (i as i64 as f64).$name()).into(),
+            }
+        }
+    };
+}
+
 impl NDArrayView {
     pub fn owned(&self) -> NDArrayOwned {
         match_op!(self, v, view!(v).to_owned().into())
@@ -747,9 +759,17 @@ impl NDArrayView {
     unary_float_fn!(cos);
     unary_float_fn!(sin);
     unary_float_fn!(tan);
+    unary_mapv_float_fn!(acos);
+    unary_mapv_float_fn!(asin);
+    unary_mapv_float_fn!(atan);
     unary_float_fn!(sqrt);
+    unary_float_fn!(exp);
     unary_float_fn!(log2);
+    unary_float_fn!(ln);
     unary_float_fn!(log10);
+    unary_mapv_float_fn!(cosh);
+    unary_mapv_float_fn!(sinh);
+    unary_mapv_float_fn!(tanh);
 }
 
 impl std::fmt::Display for NDArrayView {

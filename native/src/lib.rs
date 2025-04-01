@@ -401,9 +401,17 @@ unary_rynd_fn!(nonzero_array, nonzero);
 unary_rynd_fn!(cos_array, cos);
 unary_rynd_fn!(sin_array, sin);
 unary_rynd_fn!(tan_array, tan);
+unary_rynd_fn!(acos_array, acos);
+unary_rynd_fn!(asin_array, asin);
+unary_rynd_fn!(atan_array, atan);
 unary_rynd_fn!(sqrt_array, sqrt);
+unary_rynd_fn!(exp_array, exp);
 unary_rynd_fn!(log2_array, log2);
+unary_rynd_fn!(ln_array, ln);
 unary_rynd_fn!(log10_array, log10);
+unary_rynd_fn!(cosh_array, cosh);
+unary_rynd_fn!(sinh_array, sinh);
+unary_rynd_fn!(tanh_array, tanh);
 
 ryna_ffi_function!(clip_array(args, out) {
     let arr = ptr_to_ref(args[0].as_ptr());
