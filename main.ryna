@@ -22,6 +22,9 @@ let RYND_ASSIGN_SCALAR = RYND_LIB.demut().get_function("assign_array_scalar");
 let RYND_ASSIGN_SCALAR_MASK = RYND_LIB.demut().get_function("assign_array_scalar_mask");
 let RYND_CAST = RYND_LIB.demut().get_function("cast_array");
 
+let RYND_AND = RYND_LIB.demut().get_function("and_arrays");
+let RYND_OR = RYND_LIB.demut().get_function("or_arrays");
+let RYND_XOR = RYND_LIB.demut().get_function("xor_arrays");
 let RYND_SUM = RYND_LIB.demut().get_function("sum_arrays");
 let RYND_SUB = RYND_LIB.demut().get_function("sub_arrays");
 let RYND_MUL = RYND_LIB.demut().get_function("mul_arrays");
@@ -60,6 +63,7 @@ let RYND_CONCAT = RYND_LIB.demut().get_function("concat_arrays");
 let RYND_PERMUTE = RYND_LIB.demut().get_function("permute_axes");
 let RYND_MATMUL = RYND_LIB.demut().get_function("matmul");
 
+let RYND_NOT = RYND_LIB.demut().get_function("not_array");
 let RYND_FLOOR = RYND_LIB.demut().get_function("floor_array");
 let RYND_CEIL = RYND_LIB.demut().get_function("ceil_array");
 let RYND_ROUND = RYND_LIB.demut().get_function("round_array");
@@ -299,6 +303,22 @@ fn<T> bool(arr: 'T [NDArrayBase]) -> NDArray {
 }
 
 // Operators
+op<A> !(a: 'A [NDArrayBase]) -> NDArray {
+    return NDArray(RYND_NOT.demut().call(a.ptr()).as<Pointer>());
+}
+
+op<L, R> (a: 'L [NDArrayBase]) & (b: 'R [NDArrayBase]) -> NDArray {
+    return NDArray(RYND_AND.demut().call(a.ptr(), b.ptr()).as<Pointer>());
+}
+
+op<L, R> (a: 'L [NDArrayBase]) | (b: 'R [NDArrayBase]) -> NDArray {
+    return NDArray(RYND_OR.demut().call(a.ptr(), b.ptr()).as<Pointer>());
+}
+
+op<L, R> (a: 'L [NDArrayBase]) ^ (b: 'R [NDArrayBase]) -> NDArray {
+    return NDArray(RYND_XOR.demut().call(a.ptr(), b.ptr()).as<Pointer>());
+}
+
 op<L, R> (a: 'L [NDArrayBase]) + (b: 'R [NDArrayBase]) -> NDArray {
     return NDArray(RYND_SUM.demut().call(a.ptr(), b.ptr()).as<Pointer>());
 }

@@ -116,6 +116,20 @@ macro_rules! broadcast_op {
     };
 }
 
+
+
+macro_rules! broadcast_bitwise_op {
+    ($a: ident, $b: ident, $aa: ident, $bb: ident, $op: tt) => {
+        match ($a, $b) {
+            (NDArrayView::Int($aa), NDArrayView::Int($bb)) => NDArrayOwned::from(view!($aa) $op view!($bb)),
+            (NDArrayView::Int($aa), NDArrayView::Bool($bb)) => NDArrayOwned::from(view!($aa).mapv(|i| i != 0) $op view!($bb)),
+            (NDArrayView::Bool($aa), NDArrayView::Int($bb)) => NDArrayOwned::from(view!($aa) $op view!($bb).mapv(|i| i != 0)),
+            (NDArrayView::Bool($aa), NDArrayView::Bool($bb)) => NDArrayOwned::from(view!($aa) $op view!($bb)),
+            _ => rynd_error!("Unable to perform bitwise operation on float array")
+        }
+    };
+}
+
 macro_rules! zip_op {
     ($a: ident, $b: ident, $aa: ident, $bb: ident, $op: tt) => {
         match ($a, $b) {
@@ -274,6 +288,18 @@ impl NDArrayView {
 
     pub fn modulo(&self, other: &NDArrayView) -> NDArrayOwned {
         broadcast_op_general!(self, other, _a, _b, %, rynd_error!("Unable to divide two boolean arrays"))
+    }
+
+    pub fn and(&self, other: &NDArrayView) -> NDArrayOwned {
+        broadcast_bitwise_op!(self, other, _a, _b, &)
+    }
+
+    pub fn or(&self, other: &NDArrayView) -> NDArrayOwned {
+        broadcast_bitwise_op!(self, other, _a, _b, |)
+    }
+
+    pub fn xor(&self, other: &NDArrayView) -> NDArrayOwned {
+        broadcast_bitwise_op!(self, other, _a, _b, ^)
     }
 
     pub fn eq(&self, other: &NDArrayView) -> NDArrayOwned {
@@ -667,6 +693,14 @@ impl NDArrayView {
             (NDArrayView::Float(a), NDArrayView::Float(b)) => concat_axis(view!(a), view!(b), Axis(axis)).into(),
             (NDArrayView::Bool(a), NDArrayView::Bool(b)) => concat_axis(view!(a), view!(b), Axis(axis)).into(),
             _ => rynd_error!("Unable to concat: incompatible array types")
+        }
+    }
+
+    pub fn not(&self) -> NDArrayOwned {
+        match self {
+            NDArrayView::Int(a) => view!(a).mapv(|i| !i).into_owned().into(),
+            NDArrayView::Float(_) => rynd_error!("Unable to perform bitwise operation on float array"),
+            NDArrayView::Bool(a) => view!(a).mapv(|i| !i).into_owned().into(),
         }
     }
 

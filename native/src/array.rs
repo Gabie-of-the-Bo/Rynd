@@ -205,6 +205,9 @@ impl NDArray {
         }
     }
     
+    view_binop!(and);
+    view_binop!(or);
+    view_binop!(xor);
     view_binop!(sum);
     view_binop!(sub);
     view_binop!(mul);
@@ -320,6 +323,7 @@ impl NDArray {
         }
     }
 
+    unary_fn!(not);
     unary_fn!(floor);
     unary_fn!(ceil);
     unary_fn!(round);

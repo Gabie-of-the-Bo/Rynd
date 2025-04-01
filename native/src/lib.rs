@@ -86,6 +86,9 @@ macro_rules! binop_rynd_ffi {
     };
 }
 
+binop_rynd_ffi!(and_arrays, and);
+binop_rynd_ffi!(or_arrays, or);
+binop_rynd_ffi!(xor_arrays, xor);
 binop_rynd_ffi!(sum_arrays, sum);
 binop_rynd_ffi!(sub_arrays, sub);
 binop_rynd_ffi!(mul_arrays, mul);
@@ -390,6 +393,7 @@ macro_rules! unary_rynd_fn {
     };
 }
 
+unary_rynd_fn!(not_array, not);
 unary_rynd_fn!(floor_array, floor);
 unary_rynd_fn!(ceil_array, ceil);
 unary_rynd_fn!(round_array, round);
